@@ -35,68 +35,86 @@ const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'];
 function getJapaneseHolidays(year) {
   const holidays = {};
 
+  // ローカル時刻でDateを生成するヘルパー
+  const localDate = (y, m, d) => new Date(y, m - 1, d);
+  const dateKey = (y, m, d) => {
+    const mm = String(m).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    return `${y}-${mm}-${dd}`;
+  };
   const add = (month, day, name) => {
-    const d = new Date(year, month - 1, day);
-    const key = toDateStr(d);
-    holidays[key] = name;
+    holidays[dateKey(year, month, day)] = name;
+  };
+  // キーからローカルDateを取得（UTC誤差を回避）
+  const keyToDate = (key) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return localDate(y, m, d);
   };
 
   // ハッピーマンデー計算（第N月曜日）
   const nthMonday = (month, n) => {
-    const d = new Date(year, month - 1, 1);
+    const d = localDate(year, month, 1);
     const first = d.getDay(); // 0=日
-    const offset = (1 - first + 7) % 7; // 最初の月曜日
+    const offset = (1 - first + 7) % 7; // 最初の月曜日のオフセット
     return 1 + offset + (n - 1) * 7;
   };
 
-  // 春分・秋分（簡易計算）
-  const shunbun = Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
-  const shubun  = Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+  // 春分・秋分（1980〜2099年対応の簡易計算式）
+  const y = year - 1980;
+  const shunbun = Math.floor(20.8431 + 0.242194 * y - Math.floor(y / 4));
+  const shubun  = Math.floor(23.2488 + 0.242194 * y - Math.floor(y / 4));
 
-  // 固定祝日
+  // ── 固定祝日 ──
   add(1,  1,  '元日');
   add(2,  11, '建国記念の日');
   add(2,  23, '天皇誕生日');
+  add(3,  shunbun, '春分の日');
   add(4,  29, '昭和の日');
   add(5,  3,  '憲法記念日');
   add(5,  4,  'みどりの日');
   add(5,  5,  'こどもの日');
+  add(7,  nthMonday(7, 3),  '海の日');
   add(8,  11, '山の日');
+  add(9,  nthMonday(9, 3),  '敬老の日');
+  add(9,  shubun,  '秋分の日');
+  add(10, nthMonday(10, 2), 'スポーツの日');
   add(11, 3,  '文化の日');
   add(11, 23, '勤労感謝の日');
 
-  // 春分・秋分
-  add(3, shunbun, '春分の日');
-  add(9, shubun,  '秋分の日');
-
-  // ハッピーマンデー
+  // ── ハッピーマンデー ──
   add(1, nthMonday(1, 2), '成人の日');
-  add(7, nthMonday(7, 3), '海の日');
-  add(9, nthMonday(9, 3), '敬老の日');
-  add(10, nthMonday(10, 2), 'スポーツの日');
 
-  // 振替休日（祝日が日曜→翌月曜）
-  const keys = Object.keys(holidays);
-  keys.forEach(key => {
-    const d = new Date(key);
-    if (d.getDay() === 0) { // 日曜
-      const next = new Date(d);
-      next.setDate(next.getDate() + 1);
-      const nextKey = toDateStr(next);
-      if (!holidays[nextKey]) holidays[nextKey] = '振替休日';
+  // ── 国民の休日（祝日に挟まれた平日）──
+  // まず固定祝日+ハッピーマンデーで判定
+  const baseKeys = Object.keys(holidays).sort();
+  baseKeys.forEach(key => {
+    const d = keyToDate(key);
+    const prev = new Date(d); prev.setDate(prev.getDate() - 2);
+    const prevKey = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}-${String(prev.getDate()).padStart(2,'0')}`;
+    const mid = new Date(d); mid.setDate(mid.getDate() - 1);
+    const midKey = `${mid.getFullYear()}-${String(mid.getMonth()+1).padStart(2,'0')}-${String(mid.getDate()).padStart(2,'0')}`;
+    if (holidays[prevKey] && !holidays[midKey] && mid.getDay() !== 0 && mid.getDay() !== 6) {
+      holidays[midKey] = '国民の休日';
     }
   });
 
-  // 国民の休日（祝日に挟まれた平日）
-  const allKeys = Object.keys(holidays).sort();
-  allKeys.forEach(key => {
-    const d = new Date(key);
-    const prev = new Date(d); prev.setDate(prev.getDate() - 2);
-    const next = new Date(d); next.setDate(next.getDate() + 2);
-    const middleD = new Date(d); middleD.setDate(middleD.getDate() - 1);
-    const middleKey = toDateStr(middleD);
-    if (holidays[toDateStr(prev)] && !holidays[middleKey] && middleD.getDay() !== 0 && middleD.getDay() !== 6) {
-      holidays[middleKey] = '国民の休日';
+  // ── 振替休日（祝日が日曜→翌月曜、連続する場合は順にずらす）──
+  const allSorted = Object.keys(holidays).sort();
+  allSorted.forEach(key => {
+    const d = keyToDate(key);
+    if (d.getDay() === 0) { // 日曜祝日
+      // 翌日から順に、祝日でも日曜でもない日を探す
+      let candidate = new Date(d);
+      candidate.setDate(candidate.getDate() + 1);
+      while (true) {
+        const cKey = `${candidate.getFullYear()}-${String(candidate.getMonth()+1).padStart(2,'0')}-${String(candidate.getDate()).padStart(2,'0')}`;
+        if (!holidays[cKey] && candidate.getDay() !== 0) {
+          holidays[cKey] = '振替休日';
+          break;
+        }
+        candidate.setDate(candidate.getDate() + 1);
+        if (candidate.getDate() > 31) break; // 無限ループ防止
+      }
     }
   });
 
