@@ -411,6 +411,8 @@ ul, ol { list-style: none; }
   gap: 2px;
   flex: 1;
   justify-content: center;
+  /* ナビをサイドバーに移動したため非表示 */
+  display: none;
 }
 
 .header-nav-btn {
@@ -616,6 +618,47 @@ ul, ol { list-style: none; }
 .mini-cal-day.sunday  { color: var(--bb-sun-txt); }
 .mini-cal-day.saturday{ color: var(--bb-sat-txt); }
 .mini-cal-day.other-month { color: var(--bb-light); }
+
+/* ----------------------------------------
+   サイドバーナビゲーション
+   ---------------------------------------- */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bb-light);
+}
+
+.sidebar-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-content);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--bb-mid);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.2px;
+}
+
+.sidebar-nav-btn:hover {
+  background: var(--bb-beige);
+  color: var(--bb-dark);
+}
+
+.sidebar-nav-btn.active {
+  background: var(--bb-blue-lt);
+  color: var(--bb-blue);
+  font-weight: 500;
+}
 
 /* ----------------------------------------
    スケジュールビュー

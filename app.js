@@ -1495,9 +1495,14 @@ function renderMiniCalendar() {
   const year = miniCalDate.getFullYear();
   const month = miniCalDate.getMonth();
   const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
   const today = toDateStr(new Date());
   const selected = toDateStr(currentDate);
+
+  // 祝日データ（前後月も考慮）
+  if (!holidayCache[year]) holidayCache[year] = getJapaneseHolidays(year);
+  if (!holidayCache[year - 1]) holidayCache[year - 1] = getJapaneseHolidays(year - 1);
+  if (!holidayCache[year + 1]) holidayCache[year + 1] = getJapaneseHolidays(year + 1);
+  const holidays = { ...holidayCache[year - 1], ...holidayCache[year], ...holidayCache[year + 1] };
 
   let startDow = firstDay.getDay();
   startDow = (startDow + 6) % 7; // 月曜始まり
@@ -1513,15 +1518,17 @@ function renderMiniCalendar() {
     const ds = toDateStr(day);
     const isThisMonth = day.getMonth() === month;
     const dow = i % 7; // 0=月
+    const holidayName = holidays[ds];
 
     let cls = 'mini-cal-day';
     if (!isThisMonth) cls += ' other-month';
     if (ds === today) cls += ' today';
     else if (ds === selected) cls += ' selected';
-    if (dow === 6) cls += ' sunday';
+    if (dow === 6 || holidayName) cls += ' sunday';
     else if (dow === 5) cls += ' saturday';
 
-    gridHTML += `<div class="${cls}" onclick="miniCalDayClick('${ds}')">${day.getDate()}</div>`;
+    const titleAttr = holidayName ? ` title="${holidayName}"` : '';
+    gridHTML += `<div class="${cls}"${titleAttr} onclick="miniCalDayClick('${ds}')">${day.getDate()}</div>`;
     cursor.setDate(cursor.getDate() + 1);
   }
 
@@ -1613,7 +1620,7 @@ function showTodoPage() {
   currentPage = 'todo';
   document.getElementById('page-schedule').classList.add('hidden');
   document.getElementById('page-todo').classList.remove('hidden');
-  document.getElementById('sidebar').classList.add('hidden');
+  document.getElementById('sidebar').classList.remove('hidden');
   document.getElementById('nav-schedule').classList.remove('active');
   document.getElementById('nav-todo').classList.add('active');
   renderTodos();
