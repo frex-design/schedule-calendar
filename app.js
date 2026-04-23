@@ -1068,7 +1068,7 @@ function renderPersonalMonth(container) {
       const isThisMonth = day.getMonth() === month;
       const isToday = ds === today;
       const dow = day.getDay(); // 0=日
-      const eventsOnDay = isThisMonth ? getEventsOnDay(day, currentUser.id) : [];
+      const eventsOnDay = isThisMonth ? getEventsOnDay(day, currentUser.id, true) : [];
 
       // 祝日チェック
       if (!holidayCache[day.getFullYear()]) holidayCache[day.getFullYear()] = getJapaneseHolidays(day.getFullYear());
@@ -1725,14 +1725,21 @@ function updateHeaderUser() {
 
 /**
  * 指定日のイベントを取得
+ * @param {Date} date
+ * @param {string} userId
+ * @param {boolean} ownerOnly - trueのとき自分が登録した予定のみ（個人月ビュー用）
  */
-function getEventsOnDay(date, userId) {
+function getEventsOnDay(date, userId, ownerOnly = false) {
   const ds = toDateStr(date);
   return allEvents.filter(ev => {
     if (userId) {
       const isOwner = ev.user_id === userId;
-      const isParticipant = ev.event_participants?.some(p => p.user_id === userId);
-      if (!isOwner && !isParticipant) return false;
+      if (ownerOnly) {
+        if (!isOwner) return false;
+      } else {
+        const isParticipant = ev.event_participants?.some(p => p.user_id === userId);
+        if (!isOwner && !isParticipant) return false;
+      }
     }
     const start = toDateStr(new Date(ev.start_datetime));
     const end = toDateStr(new Date(ev.end_datetime));
