@@ -891,6 +891,110 @@ ul, ol { list-style: none; }
 /* ----------------------------------------
    グループ週ビュー / グループ日ビュー
    ---------------------------------------- */
+
+/* 2カラムレイアウト */
+.group-week-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  height: 100%;
+}
+
+.group-week-left {
+  flex: 1;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+/* 右カラム：個人月カレンダー */
+.group-week-right {
+  width: 220px;
+  min-width: 220px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--bb-light);
+  background: var(--bb-white);
+  padding: 16px 12px 12px;
+  position: sticky;
+  top: 0;
+}
+
+.gw-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.gw-month-title {
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bb-dark);
+  letter-spacing: 0.3px;
+}
+
+.gw-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.gw-month-dow {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--bb-mid);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+.gw-month-dow.sat { color: var(--bb-sat-txt); }
+.gw-month-dow.sun { color: var(--bb-sun-txt); }
+
+.gw-month-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--transition);
+  gap: 2px;
+}
+.gw-month-day:hover { background: var(--bb-blue-lt); }
+
+.gw-month-day-num {
+  font-family: 'Figtree', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.gw-month-day.today .gw-month-day-num {
+  background: var(--bb-blue);
+  color: var(--bb-white);
+  font-weight: 600;
+}
+.gw-month-day.other-month .gw-month-day-num { color: var(--bb-light); }
+.gw-month-day.sat .gw-month-day-num { color: var(--bb-sat-txt); }
+.gw-month-day.sun .gw-month-day-num { color: var(--bb-sun-txt); }
+
+/* 予定ありドット */
+.gw-month-dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--bb-blue);
+}
+.gw-month-day.today .gw-month-dot { background: var(--bb-brown); }
+
 .group-schedule-table {
   width: auto;
   table-layout: fixed;

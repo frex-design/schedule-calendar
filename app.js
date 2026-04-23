@@ -753,6 +753,14 @@ function renderGroupWeek(container) {
   const days = getDaysInRange(weekStart, weekEnd);
   const today = toDateStr(new Date());
 
+  // 2カラムラッパー
+  const wrapper = document.createElement('div');
+  wrapper.className = 'group-week-layout';
+
+  // ── 左：スケジュールテーブル ──
+  const leftCol = document.createElement('div');
+  leftCol.className = 'group-week-left';
+
   const table = document.createElement('table');
   table.className = 'group-schedule-table';
 
@@ -840,7 +848,93 @@ function renderGroupWeek(container) {
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
-  container.appendChild(table);
+  leftCol.appendChild(table);
+  wrapper.appendChild(leftCol);
+
+  // ── 右：個人月カレンダー ──
+  const rightCol = document.createElement('div');
+  rightCol.className = 'group-week-right';
+  renderMiniMonthForGroupWeek(rightCol);
+  wrapper.appendChild(rightCol);
+
+  container.appendChild(wrapper);
+}
+
+/**
+ * グループ週ビュー右側の個人月カレンダーを描画
+ */
+function renderMiniMonthForGroupWeek(container) {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const today = toDateStr(new Date());
+
+  if (!holidayCache[year]) holidayCache[year] = getJapaneseHolidays(year);
+  const holidays = holidayCache[year];
+
+  // ヘッダー
+  const header = document.createElement('div');
+  header.className = 'gw-month-header';
+  header.innerHTML = `
+    <span class="gw-month-title">${year}年${month + 1}月</span>`;
+  container.appendChild(header);
+
+  // グリッド
+  const grid = document.createElement('div');
+  grid.className = 'gw-month-grid';
+
+  // 曜日ヘッダー
+  ['月','火','水','木','金','土','日'].forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'gw-month-dow' + (i === 5 ? ' sat' : i === 6 ? ' sun' : '');
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  // 開始オフセット（月曜始まり）
+  let startDow = (firstDay.getDay() + 6) % 7;
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(gridStart.getDate() - startDow);
+
+  const cursor = new Date(gridStart);
+  for (let i = 0; i < 42; i++) {
+    const day = new Date(cursor);
+    const ds = toDateStr(day);
+    const isThisMonth = day.getMonth() === month;
+    const isToday = ds === today;
+    const dow = (i % 7); // 0=月〜6=日
+    const isSat = dow === 5;
+    const isSun = dow === 6;
+    const isHoliday = !!holidays[ds];
+    const hasEvent = isThisMonth && getEventsOnDay(day, currentUser.id, true).length > 0;
+
+    // 週がすべて翌月なら描画しない（5週で収まる月に対応）
+    if (i >= 35 && !isThisMonth) {
+      cursor.setDate(cursor.getDate() + 1);
+      continue;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'gw-month-day'
+      + (!isThisMonth ? ' other-month' : '')
+      + (isToday ? ' today' : '')
+      + (isSat ? ' sat' : '')
+      + (isSun || isHoliday ? ' sun' : '');
+    el.innerHTML = `<span class="gw-month-day-num">${day.getDate()}</span>
+      ${hasEvent ? '<span class="gw-month-dot"></span>' : ''}`;
+    el.addEventListener('click', () => {
+      currentDate = new Date(day);
+      currentView = 'personal-month';
+      document.querySelectorAll('.view-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === 'personal-month');
+      });
+      refreshCurrentView();
+    });
+    grid.appendChild(el);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  container.appendChild(grid);
 }
 
 // ----------------------------------------
