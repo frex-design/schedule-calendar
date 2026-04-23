@@ -445,6 +445,7 @@ ul, ol { list-style: none; }
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  margin-left: auto; /* 右端に寄せる */
 }
 
 .header-user-name {
@@ -498,6 +499,42 @@ ul, ol { list-style: none; }
   background: rgba(255,255,255,0.08);
   color: var(--bb-white);
   border-color: rgba(255,255,255,0.4);
+}
+
+/* ヘッダーアイコンボタン（設定・ガイド） */
+.header-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-btn);
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  background: transparent;
+}
+.header-icon-btn:hover {
+  color: var(--bb-white);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* iCalボタン */
+.ical-btn {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--bb-light);
+  color: var(--text-secondary);
+  padding: 5px 10px;
+}
+.ical-btn:hover {
+  background: var(--bb-blue);
+  color: var(--bb-white);
+  border-color: var(--bb-blue);
 }
 
 /* アプリ本体 */
@@ -1268,6 +1305,91 @@ ul, ol { list-style: none; }
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.2s ease;
+}
+
+/* ワイドモーダル（操作ガイド用） */
+.modal-wide { max-width: 740px; }
+
+/* ----------------------------------------
+   操作ガイドモーダル
+   ---------------------------------------- */
+.guide-body { display: flex; flex-direction: column; gap: 0; padding: 0 !important; }
+
+.guide-section {
+  border-bottom: 1px solid var(--bb-light);
+}
+.guide-section:last-child { border-bottom: none; }
+
+.guide-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--bb-dark);
+  padding: 16px 28px 10px;
+  background: var(--bb-cream);
+}
+
+.guide-section-body {
+  padding: 12px 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.guide-label {
+  font-weight: 600;
+  color: var(--bb-blue);
+  font-size: 12px;
+  padding-top: 1px;
+}
+
+.guide-types {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 8px !important;
+}
+
+.guide-type-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* ----------------------------------------
+   iCalモーダル
+   ---------------------------------------- */
+.ical-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.ical-shortcut-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--bb-light);
+  border-radius: var(--radius-btn);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  background: transparent;
+}
+.ical-shortcut-btn:hover {
+  background: var(--bb-blue-lt);
+  color: var(--bb-blue);
+  border-color: var(--bb-blue);
 }
 
 @keyframes slideUp {

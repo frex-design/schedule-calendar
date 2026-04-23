@@ -144,10 +144,11 @@
       <!-- ロゴ -->
       <div class="header-logo">FRe:<span>x</span> Schedule</div>
 
-      <!-- ユーザー情報 -->
+      <!-- ユーザー情報（右端） -->
       <div class="header-user">
         <span class="header-user-name" id="header-user-name">読み込み中...</span>
-        <div class="avatar" id="header-avatar" title="プロフィールを編集">?</div>
+        <button class="header-icon-btn" id="btn-settings" title="アカウント設定">⚙</button>
+        <button class="header-icon-btn" id="btn-guide" title="操作ガイド">?</button>
         <button class="header-logout-btn" id="btn-logout">ログアウト</button>
       </div>
     </header>
@@ -208,6 +209,7 @@
               <button class="add-event-btn" id="btn-add-event">
                 ＋ 予定追加
               </button>
+              <button class="nav-btn ical-btn" id="btn-ical" title="Googleカレンダー等にエクスポート">iCal</button>
             </div>
           </div>
 
@@ -414,28 +416,25 @@
   </div>
 
   <!-- ========================================
-       プロフィール編集モーダル
+       アカウント設定モーダル
        ======================================== -->
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <h2 class="modal-title">プロフィール編集</h2>
+        <h2 class="modal-title">⚙ アカウント設定</h2>
         <button class="modal-close" id="btn-close-profile-modal" aria-label="閉じる">✕</button>
       </div>
       <form id="profile-form">
         <div class="modal-body">
 
-          <!-- アバタープレビュー -->
-          <div style="text-align:center;margin-bottom:20px;">
-            <div class="avatar avatar-lg" id="profile-avatar-preview"
-                 style="margin:0 auto;border:2px solid var(--border);">
-              ?
-            </div>
-          </div>
-
-          <!-- アバターカラー選択 -->
+          <!-- アバターカラー選択（参加者チップで使用） -->
           <div class="form-group">
-            <label class="form-label">アバターカラー</label>
+            <label class="form-label">アイコンカラー</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div class="avatar avatar-lg" id="profile-avatar-preview"
+                   style="border:2px solid var(--border);">?</div>
+              <span style="font-size:12px;color:var(--text-secondary);">参加者一覧などに表示されます</span>
+            </div>
             <input type="hidden" id="selected-color">
             <div class="color-palette" id="color-palette">
               <!-- JavaScript で描画 -->
@@ -446,7 +445,7 @@
 
           <!-- 名前 -->
           <div class="form-group">
-            <label class="form-label" for="profile-name">氏名</label>
+            <label class="form-label" for="profile-name">氏名 <span style="color:var(--error);">*</span></label>
             <input class="form-input" type="text" id="profile-name"
                    placeholder="氏名" required>
           </div>
@@ -458,13 +457,166 @@
                    placeholder="部署名">
           </div>
 
+          <hr class="divider">
+
+          <!-- メールアドレス -->
+          <div class="form-group">
+            <label class="form-label" for="profile-email">メールアドレス</label>
+            <input class="form-input" type="email" id="profile-email"
+                   placeholder="your@email.com">
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
+              変更する場合のみ入力してください。ログイン時のメールアドレスが変わります。
+            </div>
+          </div>
+
+          <!-- パスワード変更 -->
+          <div class="form-group">
+            <label class="form-label" for="profile-password">新しいパスワード</label>
+            <input class="form-input" type="password" id="profile-password"
+                   placeholder="変更する場合のみ入力（6文字以上）" minlength="6" autocomplete="new-password">
+          </div>
+
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-close-profile-modal-2"
+          <button type="button" class="btn btn-secondary btn-sm"
                   onclick="closeModal('profile-modal')">キャンセル</button>
           <button type="submit" class="btn btn-primary btn-sm">保存</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================
+       操作ガイドモーダル
+       ======================================== -->
+  <div id="guide-modal" class="modal-overlay hidden">
+    <div class="modal modal-wide" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title">? 操作ガイド</h2>
+        <button class="modal-close" id="btn-close-guide-modal" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body guide-body">
+
+        <div class="guide-section">
+          <div class="guide-section-title">📅 ビューの切り替え</div>
+          <div class="guide-section-body">
+            <div class="guide-row"><span class="guide-label">グループ週</span><span>全社員の1週間の予定を一覧で確認できます。社員名の行をクリックすると予定を追加できます。</span></div>
+            <div class="guide-row"><span class="guide-label">個人日</span><span>時間軸で1日の予定を詳細に確認・追加できます。</span></div>
+            <div class="guide-row"><span class="guide-label">個人週</span><span>自分の1週間の予定を曜日別に確認できます。</span></div>
+            <div class="guide-row"><span class="guide-label">個人月</span><span>月単位のカレンダー形式で予定を確認できます。</span></div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">＋ 予定の追加・編集</div>
+          <div class="guide-section-body">
+            <div class="guide-row"><span class="guide-label">追加</span><span>「＋ 予定追加」ボタン、またはカレンダーのセルをクリックして予定を登録します。</span></div>
+            <div class="guide-row"><span class="guide-label">編集</span><span>予定をクリックすると詳細が表示され、「編集」ボタンから変更できます。</span></div>
+            <div class="guide-row"><span class="guide-label">参加者</span><span>予定作成時に参加者を選択すると、その社員のスケジュールにも表示されます。</span></div>
+            <div class="guide-row"><span class="guide-label">終日予定</span><span>「終日」チェックをオンにすると、時間なしで1日中の予定として登録されます。</span></div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">🎨 予定タイプ</div>
+          <div class="guide-section-body guide-types">
+            <div class="guide-type-chip" style="background:#E8F5E9;color:#4CAF50;">🏠 テレワーク</div>
+            <div class="guide-type-chip" style="background:#E3F2FD;color:#2196F3;">🏡 テレハーフ</div>
+            <div class="guide-type-chip" style="background:#BBDEFB;color:#1565C0;">📋 会議</div>
+            <div class="guide-type-chip" style="background:#E1F5FE;color:#4FC3F7;">🤝 来客</div>
+            <div class="guide-type-chip" style="background:#FFF3E0;color:#FF9800;">🚗 外出</div>
+            <div class="guide-type-chip" style="background:#F3E5F5;color:#9C27B0;">✈️ 出張</div>
+            <div class="guide-type-chip" style="background:#FFEBEE;color:#F44336;">🌴 休み</div>
+            <div class="guide-type-chip" style="background:#ECEFF1;color:#607D8B;">📌 その他</div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">✅ TODOリスト</div>
+          <div class="guide-section-body">
+            <div class="guide-row"><span class="guide-label">追加</span><span>左サイドバーの「✅ TODOリスト」を選択し、「＋ TODO追加」から登録します。</span></div>
+            <div class="guide-row"><span class="guide-label">完了</span><span>チェックボックスをクリックすると完了/未完了を切り替えられます。</span></div>
+            <div class="guide-row"><span class="guide-label">優先度</span><span>高・中・低の3段階で設定でき、色分けして表示されます。</span></div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">📤 iCal連携（Googleカレンダー等）</div>
+          <div class="guide-section-body">
+            <div class="guide-row"><span class="guide-label">エクスポート</span><span>「iCal」ボタンから期間を選んで .ics ファイルをダウンロードできます。</span></div>
+            <div class="guide-row"><span class="guide-label">インポート方法</span><span>Googleカレンダー → 設定 → 「インポート」から .ics ファイルを選択してアップロードします。</span></div>
+            <div class="guide-row"><span class="guide-label">iCal / Outlook</span><span>Apple カレンダーや Outlook でも同様に .ics ファイルをインポートできます。</span></div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">⚙ その他</div>
+          <div class="guide-section-body">
+            <div class="guide-row"><span class="guide-label">設定</span><span>ヘッダーの ⚙ ボタンから氏名・メールアドレス・パスワードを変更できます。</span></div>
+            <div class="guide-row"><span class="guide-label">社員順序</span><span>グループビューの社員並び順は管理者が変更できます（現在：氏名のアルファベット順）。</span></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-sm" onclick="closeModal('guide-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       iCalエクスポートモーダル
+       ======================================== -->
+  <div id="ical-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title">📤 iCalエクスポート</h2>
+        <button class="modal-close" id="btn-close-ical-modal" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7;">
+          選択した期間の予定を <code>.ics</code> ファイルでダウンロードします。<br>
+          Googleカレンダー・Apple カレンダー・Outlook などにインポートできます。
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">エクスポート対象</label>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label class="checkbox-label">
+              <input type="radio" name="ical-target" id="ical-target-self" value="self" checked>
+              自分の予定のみ
+            </label>
+            <label class="checkbox-label">
+              <input type="radio" name="ical-target" id="ical-target-all" value="all">
+              全社員の予定（グループ表示用）
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div class="form-group" style="flex:1;min-width:140px;">
+            <label class="form-label" for="ical-start">開始日</label>
+            <input class="form-input" type="date" id="ical-start">
+          </div>
+          <div class="form-group" style="flex:1;min-width:140px;">
+            <label class="form-label" for="ical-end">終了日</label>
+            <input class="form-input" type="date" id="ical-end">
+          </div>
+        </div>
+
+        <div class="ical-shortcuts">
+          <button type="button" class="ical-shortcut-btn" onclick="setIcalRange('this-month')">今月</button>
+          <button type="button" class="ical-shortcut-btn" onclick="setIcalRange('next-month')">来月</button>
+          <button type="button" class="ical-shortcut-btn" onclick="setIcalRange('3months')">3ヶ月</button>
+          <button type="button" class="ical-shortcut-btn" onclick="setIcalRange('this-year')">今年</button>
+        </div>
+
+        <div id="ical-count" style="font-size:12px;color:var(--text-secondary);margin-top:8px;min-height:18px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('ical-modal')">キャンセル</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-download-ical">⬇ ダウンロード</button>
+      </div>
     </div>
   </div>
 

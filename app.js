@@ -599,6 +599,26 @@ async function updateProfile(updates) {
   }
 }
 
+/**
+ * メール・パスワードを更新（Supabase Auth）
+ */
+async function updateAuthCredentials(newEmail, newPassword) {
+  const updates = {};
+  if (newEmail && newEmail !== currentUser.email) updates.email = newEmail;
+  if (newPassword && newPassword.length >= 6) updates.password = newPassword;
+  if (Object.keys(updates).length === 0) return true;
+
+  const { error } = await supabaseClient.auth.updateUser(updates);
+  if (error) throw error;
+  if (updates.email) {
+    showToast(`メールアドレスを ${updates.email} に変更しました`, 'success');
+  }
+  if (updates.password) {
+    showToast('パスワードを変更しました', 'success');
+  }
+  return true;
+}
+
 // ----------------------------------------
 // リアルタイム購読
 // ----------------------------------------
@@ -1325,6 +1345,11 @@ function openProfileModal() {
   const profile = currentProfile;
   document.getElementById('profile-name').value = profile.name || '';
   document.getElementById('profile-dept').value = profile.department || '';
+  // メール・パスワードフィールドをリセット
+  const emailEl = document.getElementById('profile-email');
+  const passEl  = document.getElementById('profile-password');
+  if (emailEl) emailEl.value = '';
+  if (passEl)  passEl.value = '';
 
   // カラーパレット
   renderColorPalette(profile.avatar_color);
@@ -1687,12 +1712,7 @@ function showAppScreen() {
 function updateHeaderUser() {
   if (!currentProfile) return;
   const nameEl = document.getElementById('header-user-name');
-  const avatarEl = document.getElementById('header-avatar');
   if (nameEl) nameEl.textContent = currentProfile.name;
-  if (avatarEl) {
-    avatarEl.textContent = getInitials(currentProfile.name);
-    avatarEl.style.background = currentProfile.avatar_color;
-  }
 }
 
 // ----------------------------------------
@@ -1864,6 +1884,176 @@ function escHtml(str) {
 }
 
 // ----------------------------------------
+// iCalエクスポート
+// ----------------------------------------
+
+/**
+ * iCalモーダルを開く（デフォルトで今月を設定）
+ */
+function openIcalModal() {
+  setIcalRange('this-month');
+  updateIcalCount();
+  document.getElementById('ical-modal').classList.remove('hidden');
+}
+
+/**
+ * iCal期間ショートカット
+ */
+function setIcalRange(type) {
+  const today = new Date();
+  let start, end;
+  if (type === 'this-month') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else if (type === 'next-month') {
+    start = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    end   = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+  } else if (type === '3months') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end   = new Date(today.getFullYear(), today.getMonth() + 3, 0);
+  } else if (type === 'this-year') {
+    start = new Date(today.getFullYear(), 0, 1);
+    end   = new Date(today.getFullYear(), 11, 31);
+  }
+  document.getElementById('ical-start').value = toDateStr(start);
+  document.getElementById('ical-end').value   = toDateStr(end);
+  updateIcalCount();
+}
+
+/**
+ * iCal件数プレビューを更新
+ */
+function updateIcalCount() {
+  const startVal = document.getElementById('ical-start')?.value;
+  const endVal   = document.getElementById('ical-end')?.value;
+  const targetAll = document.getElementById('ical-target-all')?.checked;
+  const countEl = document.getElementById('ical-count');
+  if (!countEl || !startVal || !endVal) return;
+  const events = getIcalEvents(startVal, endVal, targetAll);
+  countEl.textContent = `対象の予定: ${events.length} 件`;
+}
+
+/**
+ * フィルタした予定リストを返す
+ */
+function getIcalEvents(startStr, endStr, allUsers) {
+  return allEvents.filter(ev => {
+    const evStart = toDateStr(new Date(ev.start_datetime));
+    const evEnd   = toDateStr(new Date(ev.end_datetime));
+    if (evEnd < startStr || evStart > endStr) return false;
+    if (!allUsers && ev.user_id !== currentUser.id) return false;
+    return true;
+  });
+}
+
+/**
+ * iCalファイルを生成してダウンロード
+ */
+function downloadIcal() {
+  const startVal  = document.getElementById('ical-start').value;
+  const endVal    = document.getElementById('ical-end').value;
+  const targetAll = document.getElementById('ical-target-all')?.checked;
+
+  if (!startVal || !endVal) {
+    showToast('期間を指定してください', 'error');
+    return;
+  }
+  if (startVal > endVal) {
+    showToast('開始日が終了日より後になっています', 'error');
+    return;
+  }
+
+  const events = getIcalEvents(startVal, endVal, targetAll);
+  if (events.length === 0) {
+    showToast('該当する予定がありません', 'info');
+    return;
+  }
+
+  const icsEscape = (str) =>
+    (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+
+  const icsDateTime = (dtStr, allDay) => {
+    const d = new Date(dtStr);
+    if (allDay) {
+      return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    }
+    const ymd = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const hms = `${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}00`;
+    return `${ymd}T${hms}`;
+  };
+
+  let ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//FRex Design Inc.//FRex Schedule//JA',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:FRex Schedule',
+    'X-WR-TIMEZONE:Asia/Tokyo',
+    'BEGIN:VTIMEZONE',
+    'TZID:Asia/Tokyo',
+    'BEGIN:STANDARD',
+    'DTSTART:19700101T000000',
+    'TZOFFSETFROM:+0900',
+    'TZOFFSETTO:+0900',
+    'TZNAME:JST',
+    'END:STANDARD',
+    'END:VTIMEZONE',
+  ];
+
+  events.forEach(ev => {
+    const uid = `${ev.id}@frex-schedule`;
+    const ownerProfile = allProfiles.find(p => p.id === ev.user_id);
+    const ownerName = ownerProfile ? ownerProfile.name : '';
+    const typeInfo = EVENT_TYPES[ev.type] || EVENT_TYPES['other'];
+    const summary = targetAll && ownerName
+      ? `[${ownerName}] ${icsEscape(ev.title)}`
+      : icsEscape(ev.title);
+
+    let lines = ['BEGIN:VEVENT', `UID:${uid}`];
+
+    if (ev.is_all_day) {
+      // 終日イベント（VALUE=DATE）
+      const d = new Date(ev.end_datetime);
+      d.setDate(d.getDate() + 1); // iCalの終日は翌日が終了
+      const endDate = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+      lines.push(`DTSTART;VALUE=DATE:${icsDateTime(ev.start_datetime, true)}`);
+      lines.push(`DTEND;VALUE=DATE:${endDate}`);
+    } else {
+      lines.push(`DTSTART;TZID=Asia/Tokyo:${icsDateTime(ev.start_datetime, false)}`);
+      lines.push(`DTEND;TZID=Asia/Tokyo:${icsDateTime(ev.end_datetime, false)}`);
+    }
+
+    lines.push(`SUMMARY:${summary}`);
+    if (ev.memo) lines.push(`DESCRIPTION:${icsEscape(ev.memo)}`);
+
+    const facility = allFacilities.find(f => f.id === ev.facility_id);
+    if (facility) lines.push(`LOCATION:${icsEscape(facility.name)}`);
+
+    lines.push(`CATEGORIES:${icsEscape(typeInfo.label)}`);
+    lines.push('STATUS:CONFIRMED');
+    lines.push('END:VEVENT');
+    ics = ics.concat(lines);
+  });
+
+  ics.push('END:VCALENDAR');
+
+  const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const label = targetAll ? 'frex-schedule-all' : `frex-schedule-${currentProfile?.name || 'me'}`;
+  a.href     = url;
+  a.download = `${label}_${startVal}_${endVal}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`${events.length}件の予定をエクスポートしました`, 'success');
+  closeModal('ical-modal');
+}
+
+// ----------------------------------------
 // DOMContentLoaded 後に初期化
 // ----------------------------------------
 
@@ -1933,8 +2123,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // ログアウト
   document.getElementById('btn-logout').addEventListener('click', signOut);
 
-  // アバタークリック → プロフィールモーダル
-  document.getElementById('header-avatar').addEventListener('click', openProfileModal);
+  // 設定ボタン → アカウント設定モーダル
+  document.getElementById('btn-settings').addEventListener('click', openProfileModal);
+
+  // ガイドボタン → 操作ガイドモーダル
+  document.getElementById('btn-guide').addEventListener('click', () => {
+    document.getElementById('guide-modal').classList.remove('hidden');
+  });
+  document.getElementById('btn-close-guide-modal').addEventListener('click', () => closeModal('guide-modal'));
+
+  // iCalボタン
+  document.getElementById('btn-ical').addEventListener('click', openIcalModal);
+  document.getElementById('btn-close-ical-modal').addEventListener('click', () => closeModal('ical-modal'));
+  document.getElementById('btn-download-ical').addEventListener('click', downloadIcal);
+  // iCal期間変更 → 件数プレビュー更新
+  document.getElementById('ical-start').addEventListener('change', updateIcalCount);
+  document.getElementById('ical-end').addEventListener('change', updateIcalCount);
+  document.querySelectorAll('input[name="ical-target"]').forEach(r =>
+    r.addEventListener('change', updateIcalCount)
+  );
 
   // カレンダーナビゲーション
   document.getElementById('btn-prev').addEventListener('click', navigatePrev);
@@ -2031,11 +2238,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('profile-name').value.trim();
     const department = document.getElementById('profile-dept').value.trim();
     const avatar_color = document.getElementById('selected-color').value || currentProfile.avatar_color;
+    const newEmail    = (document.getElementById('profile-email')?.value || '').trim();
+    const newPassword = (document.getElementById('profile-password')?.value || '').trim();
     if (!name) {
       showToast('名前を入力してください', 'error');
       return;
     }
-    await updateProfile({ name, department, avatar_color });
+    showLoading(true);
+    try {
+      // Auth更新（メール・パスワード）
+      if (newEmail || newPassword) {
+        await updateAuthCredentials(newEmail || null, newPassword || null);
+      }
+      // プロフィール更新
+      await updateProfile({ name, department, avatar_color });
+    } catch (err) {
+      showToast('更新に失敗しました: ' + err.message, 'error');
+    } finally {
+      showLoading(false);
+    }
   });
 
   // ============================================================
