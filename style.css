@@ -1283,6 +1283,7 @@ ul, ol { list-style: none; }
    ---------------------------------------- */
 .personal-week-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   background: var(--bb-white);
 }
@@ -1300,9 +1301,9 @@ ul, ol { list-style: none; }
 }
 
 .personal-week-table th.time-col {
-  width: 56px;
   background: var(--bb-cream);
   color: var(--bb-mid);
+  text-align: center;
 }
 
 .personal-week-table td {
