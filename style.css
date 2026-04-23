@@ -13,7 +13,7 @@
   --bb-brown:    #a17c51;   /* ウォームアクセント */
   --bb-blue:     #00a9e0;   /* プライマリアクション */
   --bb-blue-lt:  #e0f5fc;   /* ブルー薄 */
-  --bb-dark:     #454545;   /* ヘッダー・メインテキスト */
+  --bb-dark:     #1a1a1a;   /* ヘッダー・メインテキスト */
   --bb-mid:      #767676;   /* サブテキスト */
   --bb-light:    #d4c9bd;   /* ボーダー */
   --bb-white:    #ffffff;
@@ -1022,7 +1022,7 @@ ul, ol { list-style: none; }
 .day-cell:hover { background: var(--bb-blue-lt); }
 
 .day-cell.today-cell {
-  background: rgba(0,169,224,0.04);
+  background: rgba(0,169,224,0.10);
 }
 
 /* ----------------------------------------

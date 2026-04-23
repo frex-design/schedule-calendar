@@ -955,7 +955,7 @@ function renderPersonalWeek(container) {
   days.forEach(day => {
     const isToday = toDateStr(day) === today;
     const dow = DOW_JA[day.getDay()];
-    headerRow.innerHTML += `<th style="${isToday ? 'background:#0D47A1;' : ''}">${day.getDate()}日(${dow})</th>`;
+    headerRow.innerHTML += `<th style="${isToday ? 'background:#00a9e0;color:#fff;' : ''}">${day.getDate()}日(${dow})</th>`;
   });
   thead.appendChild(headerRow);
   table.appendChild(thead);
