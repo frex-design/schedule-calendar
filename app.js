@@ -514,6 +514,32 @@ async function deleteEvent(eventId) {
 }
 
 /**
+ * 指定日のメモを取得
+ */
+async function fetchDayMemo(dateStr) {
+  const { data } = await supabaseClient
+    .from('day_memos')
+    .select('content')
+    .eq('user_id', currentUser.id)
+    .eq('memo_date', dateStr)
+    .maybeSingle();
+  return data?.content || '';
+}
+
+/**
+ * 指定日のメモを保存（upsert）
+ */
+async function saveDayMemo(dateStr, content) {
+  const { error } = await supabaseClient
+    .from('day_memos')
+    .upsert(
+      { user_id: currentUser.id, memo_date: dateStr, content },
+      { onConflict: 'user_id,memo_date' }
+    );
+  if (error) throw error;
+}
+
+/**
  * TODOを取得
  */
 async function fetchTodos() {
@@ -1025,8 +1051,42 @@ function renderPersonalDay(container) {
         </div>` :
         eventsOnDay.map(ev => renderDayEventCard(ev)).join('')
       }
+    </div>
+    <div class="day-memo-section">
+      <div class="day-memo-header">
+        <span class="day-memo-label">メモ</span>
+        <span class="day-memo-status" id="day-memo-status"></span>
+      </div>
+      <textarea class="day-memo-textarea" id="day-memo-textarea"
+        placeholder="この日のメモを自由に入力できます..."></textarea>
     </div>`;
   container.appendChild(div);
+
+  // メモを非同期で読み込んでセット
+  const textarea = div.querySelector('#day-memo-textarea');
+  const statusEl = div.querySelector('#day-memo-status');
+  let debounceTimer = null;
+
+  fetchDayMemo(ds).then(content => {
+    textarea.value = content;
+  });
+
+  textarea.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    statusEl.textContent = '保存中...';
+    statusEl.className = 'day-memo-status saving';
+    debounceTimer = setTimeout(async () => {
+      try {
+        await saveDayMemo(ds, textarea.value);
+        statusEl.textContent = '保存済み ✓';
+        statusEl.className = 'day-memo-status saved';
+        setTimeout(() => { statusEl.textContent = ''; statusEl.className = 'day-memo-status'; }, 2000);
+      } catch (e) {
+        statusEl.textContent = '保存失敗';
+        statusEl.className = 'day-memo-status error';
+      }
+    }, 1000);
+  });
 }
 
 /**
