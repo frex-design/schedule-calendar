@@ -368,11 +368,23 @@ async function fetchOrCreateProfile() {
 async function fetchAllProfiles() {
   const { data, error } = await supabaseClient
     .from('profiles')
-    .select('*')
-    .order('name');
+    .select('*');
   if (error) throw error;
-  allProfiles = data || [];
+  allProfiles = sortProfiles(data || []);
   updateHeaderUser();
+}
+
+/**
+ * プロフィールを「自分が最上位、他はあいうえお順」でソート
+ */
+function sortProfiles(profiles) {
+  return [...profiles].sort((a, b) => {
+    const aIsMe = a.id === currentUser?.id;
+    const bIsMe = b.id === currentUser?.id;
+    if (aIsMe && !bIsMe) return -1;
+    if (!aIsMe && bIsMe) return 1;
+    return (a.name || '').localeCompare(b.name || '', 'ja', { sensitivity: 'base' });
+  });
 }
 
 /**
@@ -587,7 +599,7 @@ async function updateProfile(updates) {
       .single();
     if (error) throw error;
     currentProfile = data;
-    allProfiles = allProfiles.map(p => p.id === currentUser.id ? data : p);
+    allProfiles = sortProfiles(allProfiles.map(p => p.id === currentUser.id ? data : p));
     updateHeaderUser();
     showToast('プロフィールを更新しました', 'success');
     closeModal('profile-modal');
