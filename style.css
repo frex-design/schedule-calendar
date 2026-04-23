@@ -996,7 +996,8 @@ ul, ol { list-style: none; }
 .gw-month-day.today .gw-month-dot { background: var(--bb-brown); }
 
 .group-schedule-table {
-  width: auto;
+  width: 100%;           /* コンテナ幅まで拡張 */
+  min-width: 1110px;     /* 最小幅 = 130 + 7×140（現在のサイズを維持） */
   table-layout: fixed;
   border-collapse: collapse;
   background: var(--bb-white);
@@ -1009,12 +1010,10 @@ ul, ol { list-style: none; }
   text-align: left;
 }
 
-/* 日付列（name-col以外のth/td）の固定幅 */
+/* 日付列：最小幅を保ちつつ、余白は均等に拡張 */
 .group-schedule-table th:not(.name-col),
 .group-schedule-table td:not(.name-cell) {
-  width: 140px;
   min-width: 140px;
-  max-width: 140px;
 }
 
 .group-schedule-table th {
@@ -1034,7 +1033,6 @@ ul, ol { list-style: none; }
   background: var(--bb-cream);
   width: 130px;
   min-width: 130px;
-  max-width: 130px;
   text-align: left;
   padding-left: 14px;
   letter-spacing: 0.5px;
@@ -1117,7 +1115,6 @@ ul, ol { list-style: none; }
   text-align: center;
   width: 130px;
   min-width: 130px;
-  max-width: 130px;
   height: 52px;
   max-height: 52px;
   border-right: 1px solid var(--bb-light);
