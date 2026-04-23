@@ -1191,7 +1191,6 @@ function openEventModal(dateStr, eventId) {
       document.getElementById('modal-title-text').textContent = '予定を編集';
       document.getElementById('event-title').value = ev.title;
       document.getElementById('event-date').value = toDateStr(new Date(ev.start_datetime));
-      document.getElementById('event-type').value = ev.type;
       document.getElementById('event-start-time').value = formatTime(ev.start_datetime);
       document.getElementById('event-end-time').value = formatTime(ev.end_datetime);
       document.getElementById('event-allday').checked = ev.is_all_day;
@@ -1706,7 +1705,11 @@ function updateHeaderUser() {
 function getEventsOnDay(date, userId) {
   const ds = toDateStr(date);
   return allEvents.filter(ev => {
-    if (userId && ev.user_id !== userId) return false;
+    if (userId) {
+      const isOwner = ev.user_id === userId;
+      const isParticipant = ev.event_participants?.some(p => p.user_id === userId);
+      if (!isOwner && !isParticipant) return false;
+    }
     const start = toDateStr(new Date(ev.start_datetime));
     const end = toDateStr(new Date(ev.end_datetime));
     return start <= ds && ds <= end;
@@ -1719,7 +1722,9 @@ function getEventsOnDay(date, userId) {
 function getEventsInHour(date, hour, userId) {
   const ds = toDateStr(date);
   return allEvents.filter(ev => {
-    if (ev.user_id !== userId) return false;
+    const isOwner = ev.user_id === userId;
+    const isParticipant = ev.event_participants?.some(p => p.user_id === userId);
+    if (!isOwner && !isParticipant) return false;
     if (ev.is_all_day) return false;
     const evDate = toDateStr(new Date(ev.start_datetime));
     const evHour = new Date(ev.start_datetime).getHours();
