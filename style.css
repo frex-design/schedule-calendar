@@ -71,8 +71,8 @@ html {
 }
 
 body {
-  font-family: 'Arial', 'Helvetica', 'Hiragino Kaku Gothic ProN',
-               'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Serif JP', 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN',
+               'Hiragino Mincho Pro', 'HGS明朝E', serif;
   background-color: var(--bg);
   color: var(--text-primary);
   line-height: 1.5;
@@ -313,7 +313,7 @@ ul, ol {
   gap: 6px;
   padding: 12px 24px;
   border-radius: var(--radius-btn);     /* 999px: フルピル */
-  font-family: 'Arial', 'Helvetica', sans-serif;
+  font-family: inherit;
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 0.4px;
