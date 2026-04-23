@@ -776,18 +776,19 @@ ul, ol { list-style: none; }
 }
 
 .group-schedule-table th {
-  background: var(--bb-dark);
-  color: rgba(255,255,255,0.88);
+  background: var(--bb-beige);
+  color: var(--bb-dark);
   font-size: 12px;
   font-weight: 400;
   padding: 8px 10px;
   white-space: nowrap;
   text-align: center;
   letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--bb-light);
 }
 
 .group-schedule-table th.name-col {
-  background: #333333;
+  background: var(--bb-cream);
   width: 120px;
   min-width: 100px;
   text-align: left;
@@ -795,6 +796,7 @@ ul, ol { list-style: none; }
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-size: 11px;
+  color: var(--bb-mid);
 }
 
 .group-schedule-table th.today-col {
@@ -977,19 +979,21 @@ ul, ol { list-style: none; }
 }
 
 .personal-week-table th {
-  background: var(--bb-dark);
-  color: rgba(255,255,255,0.85);
+  background: var(--bb-beige);
+  color: var(--bb-dark);
   font-size: 11px;
   font-weight: 400;
   padding: 8px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--bb-light);
+  border-bottom: 2px solid var(--bb-light);
   letter-spacing: 0.3px;
 }
 
 .personal-week-table th.time-col {
   width: 56px;
-  background: #333333;
+  background: var(--bb-cream);
+  color: var(--bb-mid);
 }
 
 .personal-week-table td {
@@ -1111,20 +1115,20 @@ ul, ol { list-style: none; }
 }
 
 .month-dow-header {
-  background: var(--bb-dark);
-  color: rgba(255,255,255,0.7);
+  background: var(--bb-beige);
+  color: var(--bb-mid);
   text-align: center;
   padding: 8px;
   font-size: 11px;
-  font-weight: 400;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-weight: 500;
+  border-right: 1px solid var(--bb-light);
+  border-bottom: 2px solid var(--bb-light);
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-.month-dow-header.sun { background: #6b2a1a; color: #f0c4b4; }
-.month-dow-header.sat { background: #2c5a7a; color: #b8d8ed; }
+.month-dow-header.sun { background: #f5dcd6; color: var(--bb-sun-txt); }
+.month-dow-header.sat { background: var(--bb-sat); color: var(--bb-sat-txt); }
 
 .month-day-cell {
   border-right: 1px solid var(--bb-light);
