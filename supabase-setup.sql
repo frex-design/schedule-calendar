@@ -376,3 +376,17 @@ CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
 -- ============================================================
 -- セットアップ完了！
 -- ============================================================
+
+-- ============================================================
+-- iCal ライブフィード用マイグレーション（追加実行）
+-- ============================================================
+
+-- profiles テーブルに ical_token カラムを追加
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS ical_token UUID DEFAULT gen_random_uuid() NOT NULL;
+
+-- ical_token の一意インデックス（検索高速化）
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_ical_token_idx ON profiles(ical_token);
+
+-- RLSポリシー: ical_token は本人のみ更新可
+-- (profiles テーブルのRLSが有効な場合、SELECTポリシーは既存のものを流用)

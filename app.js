@@ -1414,7 +1414,118 @@ function openProfileModal() {
   if (emailEl) emailEl.value = '';
   if (passEl)  passEl.value = '';
 
+  // iCal購読URLを表示
+  renderIcalUrls();
+
   document.getElementById('profile-modal').classList.remove('hidden');
+}
+
+// ----------------------------------------
+// iCal 購読URL（ライブフィード）
+// ----------------------------------------
+
+const ICAL_FEED_BASE = 'https://rrsbyiypwgnwzqadwpky.supabase.co/functions/v1/ical-feed';
+
+/**
+ * 設定モーダル内の購読URLを描画
+ */
+async function renderIcalUrls() {
+  const selfInput = document.getElementById('ical-url-self');
+  const allInput  = document.getElementById('ical-url-all');
+  if (!selfInput || !allInput) return;
+
+  let token = currentProfile?.ical_token;
+
+  // DBに token がない場合（カラム追加前にサインアップしたユーザー）は発行
+  if (!token) {
+    token = await issueIcalToken();
+  }
+
+  if (token) {
+    selfInput.value = `${ICAL_FEED_BASE}?token=${token}`;
+    allInput.value  = `${ICAL_FEED_BASE}?token=${token}&target=all`;
+  } else {
+    selfInput.value = '（利用不可 — 管理者にお問い合わせください）';
+    allInput.value  = '';
+  }
+}
+
+/**
+ * ical_token を新規発行してDBに保存
+ */
+async function issueIcalToken() {
+  try {
+    // gen_random_uuid() をDB側で生成してもらう
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .update({ ical_token: crypto.randomUUID() })
+      .eq('id', currentUser.id)
+      .select('ical_token')
+      .single();
+    if (error) throw error;
+    currentProfile = { ...currentProfile, ical_token: data.ical_token };
+    return data.ical_token;
+  } catch (err) {
+    console.error('ical_token発行エラー:', err);
+    return null;
+  }
+}
+
+/**
+ * iCal URLをクリップボードにコピー
+ */
+async function copyIcalUrl(target) {
+  const inputId = target === 'all' ? 'ical-url-all' : 'ical-url-self';
+  const input   = document.getElementById(inputId);
+  if (!input?.value || input.value.startsWith('（')) return;
+  try {
+    await navigator.clipboard.writeText(input.value);
+    showToast('URLをコピーしました', 'success');
+  } catch {
+    // フォールバック（古いブラウザ）
+    input.select();
+    document.execCommand('copy');
+    showToast('URLをコピーしました', 'success');
+  }
+}
+
+/**
+ * iCalトークンを再発行（URLを無効化して新しいURLを発行）
+ */
+async function resetIcalToken() {
+  if (!confirm('現在の購読URLが無効になります。\nGoogleカレンダー等に登録済みの場合は再登録が必要です。\n\n続けますか？')) return;
+  showLoading(true);
+  try {
+    const newToken = crypto.randomUUID();
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ ical_token: newToken })
+      .eq('id', currentUser.id);
+    if (error) throw error;
+    currentProfile = { ...currentProfile, ical_token: newToken };
+    await renderIcalUrls();
+    showToast('購読URLを再発行しました', 'success');
+  } catch (err) {
+    showToast('再発行に失敗しました: ' + err.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+/**
+ * Googleカレンダーに「URLから追加」するリンクを開く
+ */
+function openGoogleCalendar() {
+  const input = document.getElementById('ical-url-self');
+  if (!input?.value || input.value.startsWith('（')) {
+    showToast('URLが取得できていません', 'error');
+    return false;
+  }
+  // GoogleカレンダーはWebCalプロトコルを受け付ける
+  const webcalUrl = input.value.replace(/^https?:\/\//, 'webcal://');
+  const googleUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`;
+  window.open(googleUrl, '_blank');
+  return false;
 }
 
 /**

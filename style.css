@@ -1618,6 +1618,78 @@ ul, ol { list-style: none; }
   border-color: var(--bb-blue);
 }
 
+/* iCal 購読URL（設定モーダル内） */
+.ical-url-row { display: flex; flex-direction: column; gap: 4px; }
+
+.ical-url-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+}
+
+.ical-url-box {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ical-url-input {
+  font-size: 11px !important;
+  font-family: 'Jost', monospace;
+  color: var(--bb-mid) !important;
+  background: var(--bb-cream) !important;
+  flex: 1;
+  cursor: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ical-copy-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--bb-light);
+  border-radius: var(--radius-btn);
+  background: var(--bb-white);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.ical-copy-btn:hover {
+  background: var(--bb-blue-lt);
+  border-color: var(--bb-blue);
+}
+
+.ical-service-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 5px 12px;
+  border: 1px solid var(--bb-light);
+  border-radius: var(--radius-btn);
+  color: var(--text-secondary);
+  background: var(--bb-white);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.ical-service-btn:hover {
+  background: var(--bb-blue-lt);
+  color: var(--bb-blue);
+  border-color: var(--bb-blue);
+}
+.ical-service-reset:hover {
+  background: #fff0f0;
+  color: var(--error);
+  border-color: var(--error);
+}
+
 @keyframes slideUp {
   from { transform: translateY(16px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }

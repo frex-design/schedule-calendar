@@ -475,6 +475,48 @@
                    placeholder="変更する場合のみ入力（6文字以上）" minlength="6" autocomplete="new-password">
           </div>
 
+          <hr class="divider">
+
+          <!-- iCal 購読URL -->
+          <div class="form-group">
+            <label class="form-label">📅 iCal 購読URL（ライブ連携）</label>
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7;">
+              このURLをGoogleカレンダー・Apple カレンダー等に登録すると、<br>
+              常に最新の予定が自動同期されます。URLは他人に見せないでください。
+            </div>
+
+            <div class="ical-url-row">
+              <div class="ical-url-label">自分の予定</div>
+              <div class="ical-url-box">
+                <input class="form-input ical-url-input" id="ical-url-self" readonly
+                       placeholder="読み込み中...">
+                <button type="button" class="ical-copy-btn" onclick="copyIcalUrl('self')" title="コピー">📋</button>
+              </div>
+            </div>
+
+            <div class="ical-url-row" style="margin-top:10px;">
+              <div class="ical-url-label">全社員</div>
+              <div class="ical-url-box">
+                <input class="form-input ical-url-input" id="ical-url-all" readonly
+                       placeholder="読み込み中...">
+                <button type="button" class="ical-copy-btn" onclick="copyIcalUrl('all')" title="コピー">📋</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <a id="ical-google-link" href="#" target="_blank" class="ical-service-btn ical-service-google" onclick="return openGoogleCalendar()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 17.25a5.25 5.25 0 110-10.5 5.25 5.25 0 010 10.5zm0-8.25a3 3 0 100 6 3 3 0 000-6z"/></svg>
+                Googleカレンダーに追加
+              </a>
+              <button type="button" class="ical-service-btn" onclick="copyIcalUrl('self');showToast('URLをコピーしました。カレンダーアプリの「URLから登録」に貼り付けてください。','info')">
+                🍎 Apple / Outlook
+              </button>
+              <button type="button" class="ical-service-btn ical-service-reset" onclick="resetIcalToken()">
+                🔄 URLを再発行
+              </button>
+            </div>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-sm"
