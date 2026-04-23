@@ -426,15 +426,24 @@ async function saveEvent(eventData) {
       if (error) throw error;
       eventId = data.id;
     } else {
-      // 新規作成（複数日対応）
-      const dates = eventData.dates || [eventData.start_datetime];
+      // 新規作成
+      const dates = eventData.dates; // 複数日指定の場合のみ存在
       delete eventData.dates;
-      const insertData = dates.map(date => ({
-        ...eventData,
-        start_datetime: date.start,
-        end_datetime: date.end,
-        user_id: currentUser.id,
-      }));
+
+      let insertData;
+      if (dates && dates.length > 0) {
+        // 複数日モード
+        insertData = dates.map(date => ({
+          ...eventData,
+          start_datetime: date.start,
+          end_datetime: date.end,
+          user_id: currentUser.id,
+        }));
+      } else {
+        // 単一日モード（start_datetime / end_datetime はそのまま使う）
+        insertData = [{ ...eventData, user_id: currentUser.id }];
+      }
+
       const { data, error } = await supabaseClient
         .from('events')
         .insert(insertData)
@@ -1211,6 +1220,9 @@ function openEventModal(dateStr, eventId) {
     const now = new Date();
     document.getElementById('event-start-time').value = `${String(now.getHours()).padStart(2,'0')}:00`;
     document.getElementById('event-end-time').value = `${String(now.getHours() + 1).padStart(2,'0')}:00`;
+    // 自分をデフォルトで参加者チェック
+    const selfCb = document.getElementById(`part-${currentUser.id}`);
+    if (selfCb) selfCb.checked = true;
   }
 
   modal.classList.remove('hidden');
