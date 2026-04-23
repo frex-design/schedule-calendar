@@ -1718,8 +1718,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
-    const department = document.getElementById('signup-dept').value;
-    await signUp(name, email, password, department);
+    await signUp(name, email, password, '');
   });
 
   // ============================================================
