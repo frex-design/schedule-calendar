@@ -1845,7 +1845,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // 予定タイプボタン
   document.querySelectorAll('.event-type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      updateTypeButtons(btn.dataset.type);
+      const type = btn.dataset.type;
+      updateTypeButtons(type);
+      // テレワーク・テレハーフはタイトルを自動入力
+      const titleInput = document.getElementById('event-title');
+      if (type === 'telework') {
+        titleInput.value = 'テレワーク';
+        titleInput.readOnly = true;
+      } else if (type === 'tele-half') {
+        titleInput.value = 'テレハーフ';
+        titleInput.readOnly = true;
+      } else {
+        // 他のタイプに切り替えたらreadOnlyを解除（テレワーク系の自動入力だった場合はクリア）
+        if (titleInput.readOnly) {
+          titleInput.value = '';
+          titleInput.readOnly = false;
+        }
+      }
     });
   });
 
