@@ -1022,7 +1022,8 @@ ul, ol { list-style: none; }
   color: var(--bb-dark);
   font-size: 12px;
   font-weight: 400;
-  padding: 4px 10px;
+  padding: 5px 10px;
+  line-height: 1.2;
   white-space: nowrap;
   text-align: center;
   letter-spacing: 0.3px;
