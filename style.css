@@ -222,8 +222,8 @@ ul, ol {
 
 .auth-logo {
   font-size: 36px;
-  font-weight: 300;           /* PlayStation Display: light weight */
-  letter-spacing: -0.5px;
+  font-weight: 100;           /* Ultra-thin display weight */
+  letter-spacing: 3px;
   margin-bottom: 8px;
   color: var(--ps-white);
   line-height: 1.1;
@@ -231,7 +231,7 @@ ul, ol {
 
 .auth-logo span {
   color: var(--ps-blue);
-  font-weight: 700;
+  font-weight: 200;
 }
 
 .auth-subtitle {
@@ -429,8 +429,8 @@ ul, ol {
 
 .header-logo {
   font-size: 18px;
-  font-weight: 300;
-  letter-spacing: 0px;
+  font-weight: 100;
+  letter-spacing: 2px;
   white-space: nowrap;
   flex-shrink: 0;
   color: var(--ps-white);
@@ -438,7 +438,7 @@ ul, ol {
 
 .header-logo span {
   color: var(--ps-blue);
-  font-weight: 700;
+  font-weight: 200;
 }
 
 .header-nav {
