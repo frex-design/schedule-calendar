@@ -27,6 +27,85 @@ const PRIORITY_LABELS = { 1: '高', 2: '中', 3: '低' };
 /** 日本語曜日 */
 const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'];
 
+/**
+ * 日本の祝日を計算して返す（振替休日含む）
+ * @param {number} year
+ * @returns {Object} { 'YYYY-MM-DD': '祝日名', ... }
+ */
+function getJapaneseHolidays(year) {
+  const holidays = {};
+
+  const add = (month, day, name) => {
+    const d = new Date(year, month - 1, day);
+    const key = toDateStr(d);
+    holidays[key] = name;
+  };
+
+  // ハッピーマンデー計算（第N月曜日）
+  const nthMonday = (month, n) => {
+    const d = new Date(year, month - 1, 1);
+    const first = d.getDay(); // 0=日
+    const offset = (1 - first + 7) % 7; // 最初の月曜日
+    return 1 + offset + (n - 1) * 7;
+  };
+
+  // 春分・秋分（簡易計算）
+  const shunbun = Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+  const shubun  = Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+
+  // 固定祝日
+  add(1,  1,  '元日');
+  add(2,  11, '建国記念の日');
+  add(2,  23, '天皇誕生日');
+  add(4,  29, '昭和の日');
+  add(5,  3,  '憲法記念日');
+  add(5,  4,  'みどりの日');
+  add(5,  5,  'こどもの日');
+  add(8,  11, '山の日');
+  add(11, 3,  '文化の日');
+  add(11, 23, '勤労感謝の日');
+
+  // 春分・秋分
+  add(3, shunbun, '春分の日');
+  add(9, shubun,  '秋分の日');
+
+  // ハッピーマンデー
+  add(1, nthMonday(1, 2), '成人の日');
+  add(7, nthMonday(7, 3), '海の日');
+  add(9, nthMonday(9, 3), '敬老の日');
+  add(10, nthMonday(10, 2), 'スポーツの日');
+
+  // 振替休日（祝日が日曜→翌月曜）
+  const keys = Object.keys(holidays);
+  keys.forEach(key => {
+    const d = new Date(key);
+    if (d.getDay() === 0) { // 日曜
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      const nextKey = toDateStr(next);
+      if (!holidays[nextKey]) holidays[nextKey] = '振替休日';
+    }
+  });
+
+  // 国民の休日（祝日に挟まれた平日）
+  const allKeys = Object.keys(holidays).sort();
+  allKeys.forEach(key => {
+    const d = new Date(key);
+    const prev = new Date(d); prev.setDate(prev.getDate() - 2);
+    const next = new Date(d); next.setDate(next.getDate() + 2);
+    const middleD = new Date(d); middleD.setDate(middleD.getDate() - 1);
+    const middleKey = toDateStr(middleD);
+    if (holidays[toDateStr(prev)] && !holidays[middleKey] && middleD.getDay() !== 0 && middleD.getDay() !== 6) {
+      holidays[middleKey] = '国民の休日';
+    }
+  });
+
+  return holidays;
+}
+
+/** 祝日キャッシュ */
+const holidayCache = {};
+
 /** アバターカラーパレット */
 const AVATAR_COLORS = [
   '#4A90E2', '#E74C3C', '#2ECC71', '#F39C12', '#9B59B6',
@@ -618,6 +697,14 @@ function renderGroupWeek(container) {
   const table = document.createElement('table');
   table.className = 'group-schedule-table';
 
+  // 祝日データ取得
+  const year = currentDate.getFullYear();
+  if (!holidayCache[year]) holidayCache[year] = getJapaneseHolidays(year);
+  // 週をまたぐ場合は翌年も取得
+  const yearEnd = weekEnd.getFullYear();
+  if (!holidayCache[yearEnd]) holidayCache[yearEnd] = getJapaneseHolidays(yearEnd);
+  const holidays = { ...holidayCache[year], ...holidayCache[yearEnd] };
+
   // ヘッダー行
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
@@ -626,10 +713,22 @@ function renderGroupWeek(container) {
     const ds = toDateStr(day);
     const isToday = ds === today;
     const dow = DOW_JA[day.getDay()];
+    const dayOfWeek = day.getDay(); // 0=日, 6=土
+    const holidayName = holidays[ds];
+    const isSat = dayOfWeek === 6;
+    const isSun = dayOfWeek === 0;
+    const isHoliday = !!holidayName;
+
+    let thClass = '';
+    if (isToday) thClass = 'today-col';
+    else if (isSun || isHoliday) thClass = 'sunday-col';
+    else if (isSat) thClass = 'saturday-col';
+
     headerRow.innerHTML += `
-      <th class="${isToday ? 'today-col' : ''}">
+      <th class="${thClass}">
         <span class="col-date">${day.getDate()}</span>
         <span class="col-dow">${dow}</span>
+        ${holidayName ? `<span class="col-holiday">${holidayName}</span>` : ''}
       </th>`;
   });
   thead.appendChild(headerRow);
@@ -663,9 +762,19 @@ function renderGroupWeek(container) {
       const isToday = ds === today;
       const td = document.createElement('td');
       const eventsOnDay = getEventsOnDay(day, profile.id);
+      const dayOfWeek = day.getDay();
+      const isHoliday = !!holidays[ds];
+      const isSat = dayOfWeek === 6;
+      const isSun = dayOfWeek === 0;
+
+      let cellExtra = '';
+      if (!isToday) {
+        if (isSun || isHoliday) cellExtra = 'sunday-cell';
+        else if (isSat) cellExtra = 'saturday-cell';
+      }
 
       td.innerHTML = `
-        <div class="schedule-cell ${isToday ? 'today-col' : ''}" data-date="${ds}" data-uid="${profile.id}">
+        <div class="schedule-cell ${isToday ? 'today-col' : ''} ${cellExtra}" data-date="${ds}" data-uid="${profile.id}">
           ${eventsOnDay.map(ev => renderEventChip(ev)).join('')}
           ${isMe ? `<button class="cell-add-btn" onclick="openEventModal('${ds}')" title="予定を追加">+</button>` : ''}
         </div>`;
@@ -908,12 +1017,17 @@ function renderPersonalMonth(container) {
       const dow = day.getDay(); // 0=日
       const eventsOnDay = isThisMonth ? getEventsOnDay(day, currentUser.id) : [];
 
+      // 祝日チェック
+      if (!holidayCache[day.getFullYear()]) holidayCache[day.getFullYear()] = getJapaneseHolidays(day.getFullYear());
+      const holidayName = holidayCache[day.getFullYear()][ds];
+      const isHoliday = !!holidayName;
+
       let cellClass = 'month-day-cell';
       if (!isThisMonth) cellClass += ' other-month';
       if (isToday) cellClass += ' today';
       // 月曜始まりなので d=5→土, d=6→日
       if (d === 5) cellClass += ' saturday';
-      if (d === 6) cellClass += ' sunday';
+      if (d === 6 || isHoliday) cellClass += ' sunday';
 
       const MAX_EVENTS = 3;
       const visibleEvents = eventsOnDay.slice(0, MAX_EVENTS);
@@ -922,6 +1036,7 @@ function renderPersonalMonth(container) {
       gridHTML += `
         <div class="${cellClass}" onclick="openEventModal('${ds}')">
           <div class="month-day-number">${day.getDate()}</div>
+          ${holidayName ? `<div class="month-holiday-name">${holidayName}</div>` : ''}
           ${visibleEvents.map(ev => {
             const type = EVENT_TYPES[ev.type] || EVENT_TYPES.other;
             return `<div class="month-event-chip" style="background:${type.bg};color:${type.color};border-left-color:${type.color};"

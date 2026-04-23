@@ -841,6 +841,18 @@ ul, ol {
   background: var(--ps-blue);
 }
 
+/* 土曜ヘッダー */
+.group-schedule-table th.saturday-col {
+  background: #1a3a6b;
+  color: #7eb8ff;
+}
+
+/* 日曜・祝日ヘッダー */
+.group-schedule-table th.sunday-col {
+  background: #4a1020;
+  color: #ff8a9b;
+}
+
 .col-date {
   display: block;
   font-size: 16px;
@@ -851,6 +863,39 @@ ul, ol {
   display: block;
   font-size: 10px;
   opacity: 0.75;
+}
+
+/* 祝日名（グループ週ヘッダー） */
+.col-holiday {
+  display: block;
+  font-size: 9px;
+  opacity: 0.9;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+/* 土曜セル */
+.schedule-cell.saturday-cell {
+  background: rgba(100, 160, 255, 0.06);
+}
+
+/* 日曜・祝日セル */
+.schedule-cell.sunday-cell {
+  background: rgba(255, 80, 80, 0.05);
+}
+
+/* 祝日名（個人月ビュー） */
+.month-holiday-name {
+  font-size: 9px;
+  color: #E53935;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .group-schedule-table td.name-cell {
