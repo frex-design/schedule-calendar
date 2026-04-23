@@ -113,30 +113,104 @@ ul, ol { list-style: none; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ----------------------------------------
-   ローディングスピナー
+   ローディングオーバーレイ
    ---------------------------------------- */
 #loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(245,240,235,0.92);
+  background: var(--bb-cream);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+#loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 上部プログレスバー */
+.loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--bb-blue);
+  animation: loadingBar 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes loadingBar {
+  0%   { left: -30%; width: 30%; }
+  50%  { left: 40%;  width: 40%; }
+  100% { left: 110%; width: 30%; }
+}
+
+/* 中央コンテンツ */
+.loading-inner {
+  display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  gap: 28px;
+  animation: loadingFadeIn 0.5s ease both;
 }
 
-.spinner {
-  width: 36px;
-  height: 36px;
-  border: 2px solid var(--bb-light);
-  border-top-color: var(--bb-blue);
+@keyframes loadingFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ロゴ */
+.loading-logo {
+  font-family: 'Figtree', 'Jost', sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--bb-dark);
+}
+.loading-logo span {
+  color: var(--bb-blue);
+  font-weight: 600;
+}
+
+/* ドットアニメーション */
+.loading-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.loading-dots span {
+  display: block;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  animation: spin 0.9s linear infinite;
+  background: var(--bb-blue);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.55);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ラベル */
+.loading-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--bb-mid);
+  text-transform: uppercase;
+}
 
 /* ----------------------------------------
    トースト通知
@@ -458,30 +532,6 @@ ul, ol { list-style: none; }
   letter-spacing: 0.2px;
 }
 
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bb-white);
-  flex-shrink: 0;
-  cursor: pointer;
-  border: 1.5px solid rgba(255,255,255,0.25);
-  transition: border-color var(--transition);
-}
-
-.avatar:hover { border-color: var(--bb-blue); }
-
-.avatar-lg {
-  width: 48px;
-  height: 48px;
-  font-size: 18px;
-  border: none;
-}
 
 .header-logout-btn {
   padding: 5px 12px;
@@ -842,9 +892,9 @@ ul, ol { list-style: none; }
    グループ週ビュー / グループ日ビュー
    ---------------------------------------- */
 .group-schedule-table {
-  width: 100%;
+  width: auto;
+  table-layout: fixed;
   border-collapse: collapse;
-  min-width: 700px;
   background: var(--bb-white);
 }
 
@@ -853,6 +903,14 @@ ul, ol { list-style: none; }
   border: 1px solid var(--bb-light);
   vertical-align: top;
   text-align: left;
+}
+
+/* 日付列（name-col以外のth/td）の固定幅 */
+.group-schedule-table th:not(.name-col),
+.group-schedule-table td:not(.name-cell) {
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
 }
 
 .group-schedule-table th {
@@ -869,8 +927,9 @@ ul, ol { list-style: none; }
 
 .group-schedule-table th.name-col {
   background: var(--bb-cream);
-  width: 120px;
-  min-width: 100px;
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
   text-align: left;
   padding-left: 14px;
   letter-spacing: 0.5px;
@@ -950,7 +1009,9 @@ ul, ol { list-style: none; }
   background: var(--bb-cream);
   font-size: 13px;
   vertical-align: middle;
-  min-width: 100px;
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
   height: 52px;
   max-height: 52px;
   border-right: 1px solid var(--bb-light);

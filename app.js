@@ -193,19 +193,19 @@ async function init() {
 async function onSignedIn() {
   showLoading(true);
   try {
-    // プロフィール取得（なければ作成）
-    await fetchOrCreateProfile();
-    // 全データを並行取得
+    // 全データを一括並行取得（直列 → 並列化でロード短縮）
+    const [start, end] = getDateRange();
     await Promise.all([
+      fetchOrCreateProfile(),
       fetchAllProfiles(),
       fetchFacilities(),
+      fetchEvents(start, end),
+      fetchTodos(),
     ]);
     // 画面を切り替え
     showAppScreen();
     // 初期ビューを描画
     renderCurrentView();
-    // TODO取得
-    await fetchTodos();
     // リアルタイム購読を開始
     subscribeRealtime();
   } catch (err) {
@@ -805,9 +805,6 @@ function renderGroupWeek(container) {
     nameTd.className = 'name-cell';
     nameTd.innerHTML = `
       <div class="name-cell-inner">
-        <div class="avatar name-cell-avatar" style="background:${profile.avatar_color};width:28px;height:28px;font-size:11px;">
-          ${getInitials(profile.name)}
-        </div>
         <div class="name-cell-info">
           <div class="name-cell-name">${escHtml(profile.name)}</div>
           <div class="name-cell-dept">${escHtml(profile.department || '')}</div>
@@ -884,9 +881,6 @@ function renderGroupDay(container) {
     nameTd.className = 'name-cell';
     nameTd.innerHTML = `
       <div class="name-cell-inner">
-        <div class="avatar name-cell-avatar" style="background:${profile.avatar_color};width:28px;height:28px;font-size:11px;">
-          ${getInitials(profile.name)}
-        </div>
         <div class="name-cell-info">
           <div class="name-cell-name">${escHtml(profile.name)}</div>
           <div class="name-cell-dept">${escHtml(profile.department || '')}</div>
@@ -1281,9 +1275,6 @@ function openEventDetail(eventId) {
           const profile = p.profiles || allProfiles.find(pr => pr.id === p.user_id) || {};
           return `
             <div class="participant-chip">
-              <div class="avatar" style="background:${profile.avatar_color || '#4A90E2'};width:22px;height:22px;font-size:9px;">
-                ${getInitials(profile.name || '?')}
-              </div>
               ${escHtml(profile.name || '不明')}
             </div>`;
         }).join('')}
@@ -1363,8 +1354,6 @@ function openProfileModal() {
   if (emailEl) emailEl.value = '';
   if (passEl)  passEl.value = '';
 
-  // カラーパレット
-  renderColorPalette(profile.avatar_color);
   document.getElementById('profile-modal').classList.remove('hidden');
 }
 
@@ -1384,9 +1373,6 @@ function renderParticipantList() {
   list.innerHTML = allProfiles.map(p => `
     <label class="participant-item">
       <input type="checkbox" id="part-${p.id}" value="${p.id}">
-      <div class="avatar" style="background:${p.avatar_color};width:24px;height:24px;font-size:10px;">
-        ${getInitials(p.name)}
-      </div>
       <span class="participant-name">${escHtml(p.name)}</span>
       <span class="participant-dept">${escHtml(p.department || '')}</span>
     </label>`).join('');
@@ -1682,9 +1668,15 @@ async function switchView(view) {
 
 /**
  * ローディングオーバーレイを表示/非表示
+ * 非表示時はフェードアウトしてから display:none（CSSトランジション連携）
  */
 function showLoading(show) {
-  document.getElementById('loading-overlay').classList.toggle('hidden', !show);
+  const el = document.getElementById('loading-overlay');
+  if (show) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
 }
 
 /**
@@ -2249,7 +2241,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const name = document.getElementById('profile-name').value.trim();
     const department = document.getElementById('profile-dept').value.trim();
-    const avatar_color = document.getElementById('selected-color').value || currentProfile.avatar_color;
     const newEmail    = (document.getElementById('profile-email')?.value || '').trim();
     const newPassword = (document.getElementById('profile-password')?.value || '').trim();
     if (!name) {
@@ -2263,7 +2254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateAuthCredentials(newEmail || null, newPassword || null);
       }
       // プロフィール更新
-      await updateProfile({ name, department, avatar_color });
+      await updateProfile({ name, department });
     } catch (err) {
       showToast('更新に失敗しました: ' + err.message, 'error');
     } finally {
