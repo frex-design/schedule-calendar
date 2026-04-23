@@ -914,6 +914,8 @@ ul, ol { list-style: none; }
   font-size: 13px;
   vertical-align: middle;
   min-width: 100px;
+  height: 52px;
+  max-height: 52px;
   border-right: 1px solid var(--bb-light);
 }
 
@@ -953,7 +955,9 @@ ul, ol { list-style: none; }
 
 .schedule-cell {
   padding: 4px 6px;
-  min-height: 52px;
+  height: 52px;
+  max-height: 52px;
+  overflow: hidden;
   cursor: pointer;
   transition: background var(--transition);
   position: relative;
