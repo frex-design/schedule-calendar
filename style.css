@@ -1022,7 +1022,7 @@ ul, ol { list-style: none; }
   color: var(--bb-dark);
   font-size: 12px;
   font-weight: 400;
-  padding: 8px 10px;
+  padding: 4px 10px;
   white-space: nowrap;
   text-align: center;
   letter-spacing: 0.3px;
@@ -1060,19 +1060,19 @@ ul, ol { list-style: none; }
 }
 
 .col-date {
-  display: block;
+  display: inline;
   font-family: 'Figtree', sans-serif;
-  font-size: 18px;
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.2;
 }
 
 .col-dow {
-  display: block;
-  font-size: 10px;
+  display: inline;
+  font-size: 11px;
   opacity: 0.65;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-left: 4px;
 }
 
 /* 祝日名（グループ週ヘッダー） */
@@ -1109,10 +1109,11 @@ ul, ol { list-style: none; }
 }
 
 .group-schedule-table td.name-cell {
-  padding: 8px 12px;
+  padding: 6px 12px;
   background: var(--bb-cream);
   font-size: 13px;
   vertical-align: middle;
+  text-align: center;
   width: 130px;
   min-width: 130px;
   max-width: 130px;
@@ -1123,8 +1124,9 @@ ul, ol { list-style: none; }
 
 .name-cell-inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
 }
 
 .name-cell-avatar { flex-shrink: 0; }
@@ -1134,6 +1136,7 @@ ul, ol { list-style: none; }
 .name-cell-name {
   font-weight: 500;
   font-size: 12px;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1142,6 +1145,7 @@ ul, ol { list-style: none; }
 .name-cell-dept {
   font-size: 10px;
   color: var(--bb-mid);
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
