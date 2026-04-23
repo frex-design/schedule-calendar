@@ -46,7 +46,7 @@
        ======================================== -->
   <div id="auth-screen" class="hidden">
     <div class="auth-container">
-      <!-- ロゴヘッダー -->
+      <!-- ロゴヘッダー: PlayStation コンソール的な黒背景＋大きなライトウェイト見出し -->
       <div class="auth-header">
         <div class="auth-logo">FRe:<span>x</span> Schedule</div>
         <div class="auth-subtitle">社員グループスケジュール管理ツール</div>
@@ -54,7 +54,7 @@
 
       <!-- 認証フォーム本体 -->
       <div class="auth-body">
-        <!-- タブ -->
+        <!-- タブ: PlayStation Blue アンダーライン -->
         <div class="auth-tabs">
           <div class="auth-tab active" data-tab="login">ログイン</div>
           <div class="auth-tab" data-tab="signup">新規登録</div>
@@ -73,11 +73,11 @@
                    placeholder="••••••••" required autocomplete="current-password"
                    minlength="6">
           </div>
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
             ログイン
           </button>
-          <div style="text-align:center;margin-top:12px;">
-            <a href="#" id="forgot-password-link" style="color:var(--primary);font-size:13px;text-decoration:none;">
+          <div style="text-align:center;margin-top:16px;">
+            <a href="#" id="forgot-password-link" style="color:var(--ps-blue);font-size:13px;text-decoration:none;opacity:0.8;">
               パスワードをお忘れですか？
             </a>
           </div>
@@ -85,7 +85,7 @@
 
         <!-- パスワードリセットフォーム -->
         <form id="reset-form" class="hidden">
-          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+          <p style="color:var(--ps-body-gray);font-size:13px;margin-bottom:16px;line-height:1.6;">
             登録済みのメールアドレスを入力してください。<br>パスワード再設定のメールをお送りします。
           </p>
           <div class="form-group">
@@ -93,11 +93,11 @@
             <input class="form-input" type="email" id="reset-email"
                    placeholder="your@company.com" required autocomplete="email">
           </div>
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
             再設定メールを送る
           </button>
-          <div style="text-align:center;margin-top:12px;">
-            <a href="#" id="back-to-login-link" style="color:var(--primary);font-size:13px;text-decoration:none;">
+          <div style="text-align:center;margin-top:16px;">
+            <a href="#" id="back-to-login-link" style="color:var(--ps-blue);font-size:13px;text-decoration:none;opacity:0.8;">
               ← ログインに戻る
             </a>
           </div>
@@ -121,7 +121,7 @@
                    placeholder="••••••••" required autocomplete="new-password"
                    minlength="6">
           </div>
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
             アカウントを作成
           </button>
         </form>
