@@ -76,6 +76,31 @@
           <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
             ログイン
           </button>
+          <div style="text-align:center;margin-top:12px;">
+            <a href="#" id="forgot-password-link" style="color:var(--primary);font-size:13px;text-decoration:none;">
+              パスワードをお忘れですか？
+            </a>
+          </div>
+        </form>
+
+        <!-- パスワードリセットフォーム -->
+        <form id="reset-form" class="hidden">
+          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+            登録済みのメールアドレスを入力してください。<br>パスワード再設定のメールをお送りします。
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="reset-email">メールアドレス</label>
+            <input class="form-input" type="email" id="reset-email"
+                   placeholder="your@company.com" required autocomplete="email">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+            再設定メールを送る
+          </button>
+          <div style="text-align:center;margin-top:12px;">
+            <a href="#" id="back-to-login-link" style="color:var(--primary);font-size:13px;text-decoration:none;">
+              ← ログインに戻る
+            </a>
+          </div>
         </form>
 
         <!-- サインアップフォーム -->

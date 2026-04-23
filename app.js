@@ -156,6 +156,28 @@ async function signIn(email, password) {
 }
 
 /**
+ * パスワードリセットメール送信
+ */
+async function sendPasswordReset(email) {
+  showLoading(true);
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://frex-design.github.io/schedule-calendar/'
+    });
+    if (error) throw error;
+    showToast('パスワード再設定メールを送信しました。メールをご確認ください。', 'success');
+    // ログインフォームに戻す
+    document.getElementById('reset-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('reset-email').value = '';
+  } catch (err) {
+    showToast('メール送信に失敗しました。メールアドレスをご確認ください。', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+/**
  * サインアップ処理
  */
 async function signUp(name, email, password, department) {
@@ -1701,7 +1723,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = tab.dataset.tab;
       document.getElementById('login-form').classList.toggle('hidden', target !== 'login');
       document.getElementById('signup-form').classList.toggle('hidden', target !== 'signup');
+      document.getElementById('reset-form').classList.add('hidden');
     });
+  });
+
+  // パスワードをお忘れですか？リンク
+  document.getElementById('forgot-password-link').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('reset-form').classList.remove('hidden');
+  });
+
+  // ログインに戻るリンク
+  document.getElementById('back-to-login-link').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('reset-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+  });
+
+  // パスワードリセットフォーム
+  document.getElementById('reset-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('reset-email').value;
+    await sendPasswordReset(email);
   });
 
   // ログインフォーム
