@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FRe:x Schedule - 社員グループスケジュール管理ツール">
+  <title>FRe:x Schedule</title>
+
+  <!-- Supabase JS SDK (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- スタイルシート -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- ============================================================
+       Supabase 接続設定
+       YOUR_SUPABASE_URL と YOUR_SUPABASE_ANON_KEY を実際の値に置き換えてください
+       ============================================================ -->
+  <script>
+    // ====== ここを書き換えてください ======
+    const SUPABASE_URL = 'https://rrsbyiypwgnwzqadwpky.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyc2J5aXlwd2dud3pxYWR3cGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTI4NjMsImV4cCI6MjA4OTU2ODg2M30.ZNc4AebnJkBzQFvcxW_Pv2TSEBncyeuapCHE5IAeJQg';
+    // 会社ドメイン制限（空欄で制限なし）
+    // 例: 'frex-design.co.jp'
+    const ALLOWED_DOMAIN = '';
+    // =====================================
+  </script>
+</head>
+<body>
+
+  <!-- ========================================
+       ローディングオーバーレイ
+       ======================================== -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="color:var(--text-secondary);font-size:13px;">読み込み中...</div>
+  </div>
+
+  <!-- ========================================
+       トースト通知コンテナ
+       ======================================== -->
+  <div id="toast-container"></div>
+
+  <!-- ========================================
+       認証画面
+       ======================================== -->
+  <div id="auth-screen" class="hidden">
+    <div class="auth-container">
+      <!-- ロゴヘッダー -->
+      <div class="auth-header">
+        <div class="auth-logo">FRe:<span>x</span> Schedule</div>
+        <div class="auth-subtitle">社員グループスケジュール管理ツール</div>
+      </div>
+
+      <!-- 認証フォーム本体 -->
+      <div class="auth-body">
+        <!-- タブ -->
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="login">ログイン</div>
+          <div class="auth-tab" data-tab="signup">新規登録</div>
+        </div>
+
+        <!-- ログインフォーム -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">メールアドレス</label>
+            <input class="form-input" type="email" id="login-email"
+                   placeholder="your@email.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">パスワード</label>
+            <input class="form-input" type="password" id="login-password"
+                   placeholder="••••••••" required autocomplete="current-password"
+                   minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+            ログイン
+          </button>
+        </form>
+
+        <!-- サインアップフォーム -->
+        <form id="signup-form" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="signup-name">氏名</label>
+            <input class="form-input" type="text" id="signup-name"
+                   placeholder="例: 藤嶋 正博" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-email">メールアドレス</label>
+            <input class="form-input" type="email" id="signup-email"
+                   placeholder="your@company.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-dept">部署</label>
+            <input class="form-input" type="text" id="signup-dept"
+                   placeholder="例: 開発部">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-password">パスワード（6文字以上）</label>
+            <input class="form-input" type="password" id="signup-password"
+                   placeholder="••••••••" required autocomplete="new-password"
+                   minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">
+            アカウントを作成
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       アプリ画面（ログイン後）
+       ======================================== -->
+  <div id="app-screen" class="hidden">
+
+    <!-- ヘッダー -->
+    <header id="app-header">
+      <!-- ロゴ -->
+      <div class="header-logo">FRe:<span>x</span> Schedule</div>
+
+      <!-- ナビゲーション -->
+      <nav class="header-nav">
+        <button class="header-nav-btn active" id="nav-schedule">📅 スケジュール</button>
+        <button class="header-nav-btn" id="nav-todo">✅ TODOリスト</button>
+      </nav>
+
+      <!-- ユーザー情報 -->
+      <div class="header-user">
+        <span class="header-user-name" id="header-user-name">読み込み中...</span>
+        <div class="avatar" id="header-avatar" title="プロフィールを編集">?</div>
+        <button class="header-logout-btn" id="btn-logout">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- アプリ本体 -->
+    <div class="app-body">
+
+      <!-- ========== サイドバー ========== -->
+      <aside id="sidebar">
+        <!-- ミニカレンダー -->
+        <div class="mini-calendar">
+          <div class="mini-cal-header">
+            <button class="mini-cal-nav" id="mini-cal-prev">‹</button>
+            <div class="mini-cal-title" id="mini-cal-title"></div>
+            <button class="mini-cal-nav" id="mini-cal-next">›</button>
+          </div>
+          <!-- 曜日ヘッダー -->
+          <div class="mini-cal-grid" id="mini-cal-dow-header">
+            <div class="mini-cal-dow">月</div>
+            <div class="mini-cal-dow">火</div>
+            <div class="mini-cal-dow">水</div>
+            <div class="mini-cal-dow">木</div>
+            <div class="mini-cal-dow">金</div>
+            <div class="mini-cal-dow sat">土</div>
+            <div class="mini-cal-dow sun">日</div>
+          </div>
+          <!-- 日付グリッド -->
+          <div class="mini-cal-grid" id="mini-cal-grid"></div>
+        </div>
+      </aside>
+
+      <!-- ========== メインコンテンツ ========== -->
+      <main id="main-content">
+
+        <!-- スケジュールページ -->
+        <div id="page-schedule" class="schedule-page">
+          <!-- ビュータブ -->
+          <div class="view-tabs">
+            <button class="view-tab active" data-view="group-week">グループ週</button>
+            <button class="view-tab" data-view="group-day">グループ日</button>
+            <button class="view-tab" data-view="personal-day">個人日</button>
+            <button class="view-tab" data-view="personal-week">個人週</button>
+            <button class="view-tab" data-view="personal-month">個人月</button>
+          </div>
+
+          <!-- カレンダーナビゲーション -->
+          <div class="calendar-nav">
+            <div class="nav-period" id="nav-period"></div>
+            <div class="nav-controls">
+              <button class="nav-arrow" id="btn-prev" title="前へ">‹</button>
+              <button class="nav-btn today-btn" id="btn-today">今日</button>
+              <button class="nav-arrow" id="btn-next" title="次へ">›</button>
+              <button class="add-event-btn" id="btn-add-event">
+                ＋ 予定追加
+              </button>
+            </div>
+          </div>
+
+          <!-- カレンダー表示エリア -->
+          <div class="calendar-content" id="calendar-content">
+            <!-- JavaScript で動的に描画 -->
+          </div>
+        </div>
+
+        <!-- TODOページ -->
+        <div id="page-todo" class="hidden" style="overflow-y:auto;flex:1;">
+          <div class="todo-page">
+            <div class="todo-header">
+              <h1 class="todo-title">✅ TODOリスト</h1>
+              <button class="btn btn-primary" id="btn-add-todo">＋ TODO追加</button>
+            </div>
+
+            <!-- TODO追加フォーム -->
+            <form id="todo-form" class="todo-add-form" id="todo-add-form">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="todo-title">タイトル</label>
+                <input class="form-input" type="text" id="todo-title"
+                       placeholder="TODOのタイトル" required>
+              </div>
+              <div class="todo-form-row">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label" for="todo-due-date">期日</label>
+                  <input class="form-input" type="date" id="todo-due-date">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label" for="todo-priority">優先度</label>
+                  <select class="form-input" id="todo-priority">
+                    <option value="1">高</option>
+                    <option value="2" selected>中</option>
+                    <option value="3">低</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end;">
+                  <button type="submit" class="btn btn-primary btn-block">追加</button>
+                </div>
+              </div>
+            </form>
+
+            <!-- TODOリスト -->
+            <div class="todo-list" id="todo-list-container">
+              <!-- JavaScript で動的に描画 -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================
+       予定登録モーダル
+       ======================================== -->
+  <div id="event-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title-text">予定を追加</h2>
+        <button class="modal-close" id="btn-close-event-modal" aria-label="閉じる">✕</button>
+      </div>
+
+      <form id="event-form">
+        <div class="modal-body">
+
+          <!-- 予定タイプ選択 -->
+          <div class="form-group">
+            <label class="form-label">予定タイプ</label>
+            <input type="hidden" id="event-type-input" name="type" value="other">
+            <div class="event-type-grid">
+              <button type="button" class="event-type-btn selected" data-type="other"
+                      style="background:#ECEFF1;color:#607D8B;">
+                <span class="event-type-icon">📌</span>
+                <span>その他</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="telework"
+                      style="background:#E8F5E9;color:#4CAF50;">
+                <span class="event-type-icon">🏠</span>
+                <span>テレワーク</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="tele-half"
+                      style="background:#E3F2FD;color:#2196F3;">
+                <span class="event-type-icon">🏡</span>
+                <span>テレハーフ</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="meeting"
+                      style="background:#BBDEFB;color:#1565C0;">
+                <span class="event-type-icon">📋</span>
+                <span>会議</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="visitor"
+                      style="background:#E1F5FE;color:#4FC3F7;">
+                <span class="event-type-icon">🤝</span>
+                <span>来客</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="out"
+                      style="background:#FFF3E0;color:#FF9800;">
+                <span class="event-type-icon">🚗</span>
+                <span>外出</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="business-trip"
+                      style="background:#F3E5F5;color:#9C27B0;">
+                <span class="event-type-icon">✈️</span>
+                <span>出張</span>
+              </button>
+              <button type="button" class="event-type-btn" data-type="holiday"
+                      style="background:#FFEBEE;color:#F44336;">
+                <span class="event-type-icon">🌴</span>
+                <span>休み</span>
+              </button>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- タイトル -->
+          <div class="form-group">
+            <label class="form-label" for="event-title">タイトル <span style="color:var(--error);">*</span></label>
+            <input class="form-input" type="text" id="event-title"
+                   placeholder="予定のタイトル" required>
+          </div>
+
+          <!-- 日付 -->
+          <div class="form-group">
+            <label class="form-label" for="event-date">日付 <span style="color:var(--error);">*</span></label>
+            <input class="form-input" type="date" id="event-date" required>
+          </div>
+
+          <!-- 時刻 -->
+          <div class="form-group">
+            <label class="form-label">時刻</label>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div class="time-grid" style="flex:1;min-width:200px;">
+                <input class="form-input" type="time" id="event-start-time" value="09:00">
+                <span class="time-separator">〜</span>
+                <input class="form-input" type="time" id="event-end-time" value="18:00">
+              </div>
+              <label class="checkbox-label">
+                <input type="checkbox" id="event-allday">
+                終日
+              </label>
+            </div>
+          </div>
+
+          <!-- 施設・場所 -->
+          <div class="form-group">
+            <label class="form-label" for="event-facility">場所</label>
+            <select class="form-input" id="event-facility">
+              <option value="">場所を選択...</option>
+            </select>
+          </div>
+
+          <!-- メモ -->
+          <div class="form-group">
+            <label class="form-label" for="event-memo">メモ</label>
+            <textarea class="form-input" id="event-memo"
+                      placeholder="メモや詳細を入力..." rows="3"></textarea>
+          </div>
+
+          <!-- 参加者 -->
+          <div class="form-group">
+            <label class="form-label">参加者</label>
+            <div class="participant-list" id="participant-list">
+              <!-- JavaScript で描画 -->
+            </div>
+          </div>
+
+        </div><!-- /modal-body -->
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger btn-sm hidden" id="btn-delete-event">
+            削除
+          </button>
+          <div style="flex:1;"></div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-event">
+            キャンセル
+          </button>
+          <button type="submit" class="btn btn-primary btn-sm">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================
+       予定詳細モーダル
+       ======================================== -->
+  <div id="event-detail-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title">予定の詳細</h2>
+        <button class="modal-close" id="btn-close-detail-modal" aria-label="閉じる">✕</button>
+      </div>
+      <div class="modal-body" id="event-detail-content">
+        <!-- JavaScript で描画 -->
+      </div>
+      <div class="modal-footer" id="event-detail-footer">
+        <!-- JavaScript で描画 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       プロフィール編集モーダル
+       ======================================== -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title">プロフィール編集</h2>
+        <button class="modal-close" id="btn-close-profile-modal" aria-label="閉じる">✕</button>
+      </div>
+      <form id="profile-form">
+        <div class="modal-body">
+
+          <!-- アバタープレビュー -->
+          <div style="text-align:center;margin-bottom:20px;">
+            <div class="avatar avatar-lg" id="profile-avatar-preview"
+                 style="margin:0 auto;border:2px solid var(--border);">
+              ?
+            </div>
+          </div>
+
+          <!-- アバターカラー選択 -->
+          <div class="form-group">
+            <label class="form-label">アバターカラー</label>
+            <input type="hidden" id="selected-color">
+            <div class="color-palette" id="color-palette">
+              <!-- JavaScript で描画 -->
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- 名前 -->
+          <div class="form-group">
+            <label class="form-label" for="profile-name">氏名</label>
+            <input class="form-input" type="text" id="profile-name"
+                   placeholder="氏名" required>
+          </div>
+
+          <!-- 部署 -->
+          <div class="form-group">
+            <label class="form-label" for="profile-dept">部署</label>
+            <input class="form-input" type="text" id="profile-dept"
+                   placeholder="部署名">
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-close-profile-modal-2"
+                  onclick="closeModal('profile-modal')">キャンセル</button>
+          <button type="submit" class="btn btn-primary btn-sm">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================
+       アプリケーションロジック
+       ======================================== -->
+  <script src="app.js"></script>
+
+</body>
+</html>
