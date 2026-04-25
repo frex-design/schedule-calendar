@@ -1499,19 +1499,42 @@ async function renderIcalUrls() {
   const allInput  = document.getElementById('ical-url-all');
   if (!selfInput || !allInput) return;
 
-  let token = currentProfile?.ical_token;
+  selfInput.value = '';
+  allInput.value  = '';
+  selfInput.placeholder = '取得中...';
+  allInput.placeholder  = '取得中...';
 
-  // DBに token がない場合（カラム追加前にサインアップしたユーザー）は発行
+  // キャッシュを使わず毎回DBから再取得（カラム追加後も即反映）
+  const { data: fresh, error: fetchErr } = await supabaseClient
+    .from('profiles')
+    .select('ical_token')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (fetchErr) {
+    console.error('プロフィール再取得エラー:', fetchErr);
+    selfInput.placeholder = 'エラー — 再度お試しください';
+    allInput.placeholder  = 'エラー — 再度お試しください';
+    return;
+  }
+
+  let token = fresh?.ical_token;
+
+  // トークン未設定なら新規発行
   if (!token) {
     token = await issueIcalToken();
+  } else {
+    currentProfile = { ...currentProfile, ical_token: token };
   }
 
   if (token) {
     selfInput.value = `${ICAL_FEED_BASE}?token=${token}`;
     allInput.value  = `${ICAL_FEED_BASE}?token=${token}&target=all`;
+    selfInput.placeholder = '';
+    allInput.placeholder  = '';
   } else {
-    selfInput.value = '（利用不可 — 管理者にお問い合わせください）';
-    allInput.value  = '';
+    selfInput.placeholder = 'セットアップが必要です（管理者へ連絡）';
+    allInput.placeholder  = 'セットアップが必要です（管理者へ連絡）';
   }
 }
 
@@ -1520,7 +1543,6 @@ async function renderIcalUrls() {
  */
 async function issueIcalToken() {
   try {
-    // gen_random_uuid() をDB側で生成してもらう
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ ical_token: crypto.randomUUID() })
@@ -1532,6 +1554,12 @@ async function issueIcalToken() {
     return data.ical_token;
   } catch (err) {
     console.error('ical_token発行エラー:', err);
+    // カラムが存在しない場合の案内
+    if (err.code === '42703' || err.message?.includes('ical_token')) {
+      showToast('DBセットアップが必要です。Supabase SQL Editorでマイグレーションを実行してください。', 'error');
+    } else {
+      showToast('iCal URL の取得に失敗しました: ' + err.message, 'error');
+    }
     return null;
   }
 }
@@ -1542,7 +1570,7 @@ async function issueIcalToken() {
 async function copyIcalUrl(target) {
   const inputId = target === 'all' ? 'ical-url-all' : 'ical-url-self';
   const input   = document.getElementById(inputId);
-  if (!input?.value || input.value.startsWith('（')) return;
+  if (!input?.value || !input.value.startsWith('http')) return;
   try {
     await navigator.clipboard.writeText(input.value);
     showToast('URLをコピーしました', 'success');
