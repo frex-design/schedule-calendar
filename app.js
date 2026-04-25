@@ -146,6 +146,7 @@ let currentPage = 'schedule';     // 現在のページ（schedule / todo）
 let currentDate = new Date();     // 現在参照中の日付
 let miniCalDate = new Date();     // ミニカレンダーの月
 let realtimeChannel = null;       // リアルタイム購読チャンネル
+let isAppReady = false;           // 初期化完了フラグ（二重起動防止）
 let editingEventId = null;        // 編集中イベントID（nullで新規）
 
 // ----------------------------------------
@@ -249,6 +250,8 @@ async function init() {
  * サインイン後の処理
  */
 async function onSignedIn() {
+  if (isAppReady) return; // タブ復帰時のトークン更新など二重呼び出しを防ぐ
+  isAppReady = true;
   showLoading(true);
   try {
     // カレンダー表示に必要なデータを優先取得
@@ -283,6 +286,7 @@ async function onSignedIn() {
  * サインアウト後の処理
  */
 function onSignedOut() {
+  isAppReady = false;
   currentUser = null;
   currentProfile = null;
   allProfiles = [];
