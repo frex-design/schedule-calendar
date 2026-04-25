@@ -1504,27 +1504,27 @@ async function renderIcalUrls() {
   selfInput.placeholder = '取得中...';
   allInput.placeholder  = '取得中...';
 
-  // キャッシュを使わず毎回DBから再取得（カラム追加後も即反映）
+  // select('*') でカラム不存在エラーを回避しつつ再取得
   const { data: fresh, error: fetchErr } = await supabaseClient
     .from('profiles')
-    .select('ical_token')
+    .select('*')
     .eq('id', currentUser.id)
     .single();
 
   if (fetchErr) {
     console.error('プロフィール再取得エラー:', fetchErr);
-    selfInput.placeholder = 'エラー — 再度お試しください';
-    allInput.placeholder  = 'エラー — 再度お試しください';
+    selfInput.placeholder = 'DBエラー — Supabaseのセットアップを確認してください';
+    allInput.placeholder  = 'DBエラー — Supabaseのセットアップを確認してください';
     return;
   }
 
   let token = fresh?.ical_token;
 
-  // トークン未設定なら新規発行
+  // ical_token カラムが存在しない or NULL → 新規発行を試みる
   if (!token) {
     token = await issueIcalToken();
   } else {
-    currentProfile = { ...currentProfile, ical_token: token };
+    currentProfile = { ...currentProfile, ...fresh };
   }
 
   if (token) {
@@ -1555,8 +1555,11 @@ async function issueIcalToken() {
   } catch (err) {
     console.error('ical_token発行エラー:', err);
     // カラムが存在しない場合の案内
-    if (err.code === '42703' || err.message?.includes('ical_token')) {
-      showToast('DBセットアップが必要です。Supabase SQL Editorでマイグレーションを実行してください。', 'error');
+    const needsMigration = err.code === '42703'
+      || err.message?.includes('ical_token')
+      || err.message?.includes('column');
+    if (needsMigration) {
+      showToast('Supabase SQL Editor でマイグレーションを実行してください（下記SQL）', 'error');
     } else {
       showToast('iCal URL の取得に失敗しました: ' + err.message, 'error');
     }
