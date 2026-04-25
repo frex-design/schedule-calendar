@@ -193,19 +193,24 @@ async function init() {
 async function onSignedIn() {
   showLoading(true);
   try {
-    // 全データを一括並行取得（直列 → 並列化でロード短縮）
+    // カレンダー表示に必要なデータを優先取得
     const [start, end] = getDateRange();
     await Promise.all([
       fetchOrCreateProfile(),
       fetchAllProfiles(),
-      fetchFacilities(),
       fetchEvents(start, end),
-      fetchTodos(),
     ]);
-    // 画面を切り替え
+    // 画面をすぐに表示
     showAppScreen();
-    // 初期ビューを描画
     renderCurrentView();
+    showLoading(false);
+
+    // 施設・TODOはバックグラウンドで取得（初期表示に不要）
+    Promise.all([
+      fetchFacilities(),
+      fetchTodos(),
+    ]).catch(err => console.error('バックグラウンドデータ取得エラー:', err));
+
     // リアルタイム購読を開始
     subscribeRealtime();
   } catch (err) {
@@ -481,7 +486,23 @@ async function saveEvent(eventData) {
     }
 
     showToast(editingEventId ? '予定を更新しました' : '予定を登録しました', 'success');
-    await refreshCurrentView();
+    // 全件再取得の代わりに保存した1件だけ取得してローカル更新
+    const { data: savedEvent } = await supabaseClient
+      .from('events')
+      .select(`*, profiles!events_user_id_fkey(id, name, avatar_color, department),
+               event_participants(user_id, profiles!event_participants_user_id_fkey(id, name, avatar_color))`)
+      .eq('id', eventId)
+      .single();
+    if (savedEvent) {
+      if (editingEventId) {
+        const idx = allEvents.findIndex(e => e.id === editingEventId);
+        if (idx >= 0) allEvents[idx] = savedEvent;
+      } else {
+        allEvents.push(savedEvent);
+        allEvents.sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
+      }
+    }
+    renderCurrentView();
   } catch (err) {
     console.error('イベント保存エラー:', err);
     showToast('予定の保存に失敗しました: ' + err.message, 'error');
