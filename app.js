@@ -154,61 +154,169 @@ let editingEventId = null;        // 編集中イベントID（nullで新規）
 // ----------------------------------------
 
 /**
- * 時刻セレクトのオプションを生成（30分刻み 00:00〜23:30）
+ * カスタム時刻ピッカー（5分刻み、時・分の2列スクロール式）
  */
-function initTimeSelects() {
-  const times = [];
+const _tp = {}; // ピッカー状態を id で管理
+
+function initTimePickers() {
+  _buildTimePicker('event-start-time');
+  _buildTimePicker('event-end-time');
+  // 開始時刻が変わったら終了を自動+1時間
+  document.getElementById('event-start-time').addEventListener('tp-change', autoFillEndTime);
+}
+
+function _buildTimePicker(hiddenId) {
+  const hidden = document.getElementById(hiddenId);
+  if (!hidden) return;
+
+  const wrap = hidden.parentElement;
+
+  // トリガーボタン
+  const trigger = document.createElement('div');
+  trigger.className = 'tp-trigger';
+  trigger.tabIndex = 0;
+  trigger.innerHTML = `
+    <span class="tp-display">${hidden.value || '09:00'}</span>
+    <svg class="tp-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
+      <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  wrap.insertBefore(trigger, hidden);
+
+  // ドロップダウン（body 直下に置いて modal の overflow を回避）
+  const dropdown = document.createElement('div');
+  dropdown.className = 'tp-dropdown';
+  dropdown.style.display = 'none';
+
+  const hourCol = document.createElement('div');
+  hourCol.className = 'tp-col';
   for (let h = 0; h < 24; h++) {
-    for (const m of [0, 30]) {
-      times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-    }
+    const el = document.createElement('div');
+    el.className = 'tp-item';
+    el.textContent = String(h).padStart(2, '0');
+    el.dataset.h = String(h).padStart(2, '0');
+    hourCol.appendChild(el);
   }
-  ['event-start-time', 'event-end-time'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = times.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  const sep = document.createElement('div');
+  sep.className = 'tp-col-sep';
+  sep.textContent = ':';
+
+  const minCol = document.createElement('div');
+  minCol.className = 'tp-col';
+  for (let m = 0; m < 60; m += 5) {
+    const el = document.createElement('div');
+    el.className = 'tp-item';
+    el.textContent = String(m).padStart(2, '0');
+    el.dataset.m = String(m).padStart(2, '0');
+    minCol.appendChild(el);
+  }
+
+  dropdown.append(hourCol, sep, minCol);
+  document.body.appendChild(dropdown);
+
+  const state = { trigger, dropdown, hourCol, minCol, hidden, open: false };
+  _tp[hiddenId] = state;
+
+  // --- ヘルパー ---
+  function currentHM() {
+    const [h, m] = (hidden.value || '09:00').split(':');
+    return { h, m };
+  }
+
+  function highlight() {
+    const { h, m } = currentHM();
+    hourCol.querySelectorAll('.tp-item').forEach(el =>
+      el.classList.toggle('active', el.dataset.h === h));
+    minCol.querySelectorAll('.tp-item').forEach(el =>
+      el.classList.toggle('active', el.dataset.m === m));
+    // アクティブ行をスクロールして中央へ
+    const ah = hourCol.querySelector('.tp-item.active');
+    const am = minCol.querySelector('.tp-item.active');
+    if (ah) hourCol.scrollTop = ah.offsetTop - hourCol.clientHeight / 2 + ah.clientHeight / 2;
+    if (am) minCol.scrollTop = am.offsetTop - minCol.clientHeight / 2 + am.clientHeight / 2;
+  }
+
+  function setVal(timeStr, fireEvent = true) {
+    // 5分刻みにスナップ
+    const [hh, mm] = timeStr.split(':').map(Number);
+    const mSnapped = Math.min(55, Math.round(mm / 5) * 5);
+    const normalized = `${String(hh).padStart(2,'0')}:${String(mSnapped).padStart(2,'0')}`;
+    hidden.value = normalized;
+    trigger.querySelector('.tp-display').textContent = normalized;
+    highlight();
+    if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: normalized }));
+  }
+  state.setVal = setVal;
+
+  function position() {
+    const r = trigger.getBoundingClientRect();
+    dropdown.style.top  = `${r.bottom + 4}px`;
+    dropdown.style.left = `${r.left}px`;
+    dropdown.style.minWidth = `${r.width}px`;
+  }
+
+  function openPicker() {
+    // 他のピッカーを閉じる
+    Object.values(_tp).forEach(s => { if (s !== state) closePicker(s); });
+    position();
+    dropdown.style.display = 'flex';
+    trigger.classList.add('open');
+    state.open = true;
+    highlight();
+  }
+
+  function closePicker(s = state) {
+    s.dropdown.style.display = 'none';
+    s.trigger.classList.remove('open');
+    s.open = false;
+  }
+
+  // --- イベント ---
+  trigger.addEventListener('click', () => state.open ? closePicker() : openPicker());
+  trigger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
+    if (e.key === 'Escape') closePicker();
   });
-  document.getElementById('event-start-time').addEventListener('change', autoFillEndTime);
-}
 
-/**
- * 開始時刻変更時に終了時刻を自動で+1時間にセット
- */
-function autoFillEndTime() {
-  const startSel = document.getElementById('event-start-time');
-  const endSel   = document.getElementById('event-end-time');
-  if (!startSel.value) return;
-  const [h, m] = startSel.value.split(':').map(Number);
-  let endH = h + 1, endM = m;
-  if (endH >= 24) { endH = 23; endM = 30; }
-  const endVal = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
-  setTimeSelectValue('event-end-time', endVal);
-}
+  hourCol.addEventListener('click', e => {
+    const item = e.target.closest('.tp-item');
+    if (!item) return;
+    setVal(`${item.dataset.h}:${currentHM().m}`);
+  });
 
-/**
- * セレクトに指定の時刻をセット（オプションが無ければ挿入して選択）
- */
-function setTimeSelectValue(id, timeStr) {
-  const sel = document.getElementById(id);
-  if (!sel) return;
-  sel.value = timeStr;
-  if (sel.value !== timeStr) {
-    // 30分刻みに該当しない時刻（既存イベント編集時など）は動的に追加
-    const [h, m] = timeStr.split(':').map(Number);
-    const mins = h * 60 + m;
-    const opt = new Option(timeStr, timeStr);
-    let inserted = false;
-    for (let i = 0; i < sel.options.length; i++) {
-      const [oh, om] = sel.options[i].value.split(':').map(Number);
-      if (oh * 60 + om > mins) {
-        sel.insertBefore(opt, sel.options[i]);
-        inserted = true;
-        break;
-      }
+  minCol.addEventListener('click', e => {
+    const item = e.target.closest('.tp-item');
+    if (!item) return;
+    setVal(`${currentHM().h}:${item.dataset.m}`);
+    closePicker();
+  });
+
+  document.addEventListener('mousedown', e => {
+    if (state.open && !trigger.contains(e.target) && !dropdown.contains(e.target)) {
+      closePicker();
     }
-    if (!inserted) sel.appendChild(opt);
-    sel.value = timeStr;
+  });
+}
+
+/** 外部から時刻をセット（自動入力時は tp-change を発火しない） */
+function tpSetValue(hiddenId, timeStr) {
+  const s = _tp[hiddenId];
+  if (s) s.setVal(timeStr, false);
+  else {
+    const el = document.getElementById(hiddenId);
+    if (el) el.value = timeStr;
   }
+}
+
+/** 開始時刻 +1時間 を終了時刻にセット */
+function autoFillEndTime() {
+  const val = document.getElementById('event-start-time').value;
+  if (!val) return;
+  const [h, m] = val.split(':').map(Number);
+  let endH = h + 1, endM = m;
+  if (endH >= 24) { endH = 23; endM = 55; }
+  tpSetValue('event-end-time', `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`);
 }
 
 /**
@@ -1360,8 +1468,8 @@ function openEventModal(dateStr, eventId) {
       document.getElementById('modal-title-text').textContent = '予定を編集';
       document.getElementById('event-title').value = ev.title;
       document.getElementById('event-date').value = toDateStr(new Date(ev.start_datetime));
-      setTimeSelectValue('event-start-time', formatTime(ev.start_datetime));
-      setTimeSelectValue('event-end-time', formatTime(ev.end_datetime));
+      tpSetValue('event-start-time', formatTime(ev.start_datetime));
+      tpSetValue('event-end-time', formatTime(ev.end_datetime));
       document.getElementById('event-allday').checked = ev.is_all_day;
       document.getElementById('event-memo').value = ev.memo || '';
       document.getElementById('event-facility').value = ev.facility || '';
@@ -1384,13 +1492,14 @@ function openEventModal(dateStr, eventId) {
     document.getElementById('event-type-input').value = 'other';
     updateTypeButtons('other');
     document.getElementById('btn-delete-event').classList.add('hidden');
-    // 開始時刻は現在の時間、終了は+1時間をデフォルト
+    // 開始時刻は現在の時間（5分刻み切り捨て）、終了は+1時間をデフォルト
     const now = new Date();
     const startH = String(now.getHours()).padStart(2, '0');
+    const startM = String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0');
     let endH = now.getHours() + 1;
     if (endH >= 24) endH = 23;
-    setTimeSelectValue('event-start-time', `${startH}:00`);
-    setTimeSelectValue('event-end-time', `${String(endH).padStart(2, '0')}:00`);
+    tpSetValue('event-start-time', `${startH}:${startM}`);
+    tpSetValue('event-end-time', `${String(endH).padStart(2, '0')}:${startM}`);
     // 自分をデフォルトで参加者チェック
     const selfCb = document.getElementById(`part-${currentUser.id}`);
     if (selfCb) selfCb.checked = true;
@@ -2549,8 +2658,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 時刻セレクトを初期化
-  initTimeSelects();
+  // 時刻ピッカーを初期化
+  initTimePickers();
 
   // ============================================================
   // アプリ起動
