@@ -1017,7 +1017,7 @@ ul, ol { list-style: none; }
 }
 
 .group-schedule-table th {
-  background: #e4e2de;
+  background: #f7f6f4;
   color: var(--bb-dark);
   font-size: 12px;
   font-weight: 400;
