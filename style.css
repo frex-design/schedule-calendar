@@ -239,7 +239,7 @@ ul, ol { list-style: none; }
   letter-spacing: 0.2px;
 }
 
-.toast.success { background: var(--success); }
+.toast.success { background: var(--bb-blue); }
 .toast.error   { background: var(--bb-error); }
 .toast.info    { background: var(--bb-blue); }
 .toast.warning { background: var(--warning); }
