@@ -2491,17 +2491,21 @@ document.addEventListener('DOMContentLoaded', () => {
       updateTypeButtons(type);
       // テレワーク・テレハーフはタイトルを自動入力
       const titleInput = document.getElementById('event-title');
+      const alldayCheckbox = document.getElementById('event-allday');
       if (type === 'telework') {
         titleInput.value = 'テレワーク';
         titleInput.readOnly = true;
+        alldayCheckbox.checked = true;
       } else if (type === 'tele-half') {
         titleInput.value = 'テレハーフ';
         titleInput.readOnly = true;
+        alldayCheckbox.checked = false;
       } else {
         // 他のタイプに切り替えたらreadOnlyを解除（テレワーク系の自動入力だった場合はクリア）
         if (titleInput.readOnly) {
           titleInput.value = '';
           titleInput.readOnly = false;
+          alldayCheckbox.checked = false;
         }
       }
     });
