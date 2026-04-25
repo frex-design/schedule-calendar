@@ -360,9 +360,13 @@
             <label class="form-label">時刻</label>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
               <div class="time-grid" style="flex:1;min-width:200px;">
-                <input class="form-input" type="time" id="event-start-time" value="09:00">
+                <div class="time-select-wrap">
+                  <select class="time-select" id="event-start-time"></select>
+                </div>
                 <span class="time-separator">〜</span>
-                <input class="form-input" type="time" id="event-end-time" value="18:00">
+                <div class="time-select-wrap">
+                  <select class="time-select" id="event-end-time"></select>
+                </div>
               </div>
               <label class="checkbox-label">
                 <input type="checkbox" id="event-allday">

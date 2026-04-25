@@ -153,6 +153,64 @@ let editingEventId = null;        // 編集中イベントID（nullで新規）
 // ----------------------------------------
 
 /**
+ * 時刻セレクトのオプションを生成（30分刻み 00:00〜23:30）
+ */
+function initTimeSelects() {
+  const times = [];
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 30]) {
+      times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    }
+  }
+  ['event-start-time', 'event-end-time'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = times.map(t => `<option value="${t}">${t}</option>`).join('');
+  });
+  document.getElementById('event-start-time').addEventListener('change', autoFillEndTime);
+}
+
+/**
+ * 開始時刻変更時に終了時刻を自動で+1時間にセット
+ */
+function autoFillEndTime() {
+  const startSel = document.getElementById('event-start-time');
+  const endSel   = document.getElementById('event-end-time');
+  if (!startSel.value) return;
+  const [h, m] = startSel.value.split(':').map(Number);
+  let endH = h + 1, endM = m;
+  if (endH >= 24) { endH = 23; endM = 30; }
+  const endVal = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+  setTimeSelectValue('event-end-time', endVal);
+}
+
+/**
+ * セレクトに指定の時刻をセット（オプションが無ければ挿入して選択）
+ */
+function setTimeSelectValue(id, timeStr) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.value = timeStr;
+  if (sel.value !== timeStr) {
+    // 30分刻みに該当しない時刻（既存イベント編集時など）は動的に追加
+    const [h, m] = timeStr.split(':').map(Number);
+    const mins = h * 60 + m;
+    const opt = new Option(timeStr, timeStr);
+    let inserted = false;
+    for (let i = 0; i < sel.options.length; i++) {
+      const [oh, om] = sel.options[i].value.split(':').map(Number);
+      if (oh * 60 + om > mins) {
+        sel.insertBefore(opt, sel.options[i]);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) sel.appendChild(opt);
+    sel.value = timeStr;
+  }
+}
+
+/**
  * アプリ起動処理
  */
 async function init() {
@@ -1298,8 +1356,8 @@ function openEventModal(dateStr, eventId) {
       document.getElementById('modal-title-text').textContent = '予定を編集';
       document.getElementById('event-title').value = ev.title;
       document.getElementById('event-date').value = toDateStr(new Date(ev.start_datetime));
-      document.getElementById('event-start-time').value = formatTime(ev.start_datetime);
-      document.getElementById('event-end-time').value = formatTime(ev.end_datetime);
+      setTimeSelectValue('event-start-time', formatTime(ev.start_datetime));
+      setTimeSelectValue('event-end-time', formatTime(ev.end_datetime));
       document.getElementById('event-allday').checked = ev.is_all_day;
       document.getElementById('event-memo').value = ev.memo || '';
       document.getElementById('event-facility').value = ev.facility || '';
@@ -1322,10 +1380,13 @@ function openEventModal(dateStr, eventId) {
     document.getElementById('event-type-input').value = 'other';
     updateTypeButtons('other');
     document.getElementById('btn-delete-event').classList.add('hidden');
-    // 終了時刻のデフォルト
+    // 開始時刻は現在の時間、終了は+1時間をデフォルト
     const now = new Date();
-    document.getElementById('event-start-time').value = `${String(now.getHours()).padStart(2,'0')}:00`;
-    document.getElementById('event-end-time').value = `${String(now.getHours() + 1).padStart(2,'0')}:00`;
+    const startH = String(now.getHours()).padStart(2, '0');
+    let endH = now.getHours() + 1;
+    if (endH >= 24) endH = 23;
+    setTimeSelectValue('event-start-time', `${startH}:00`);
+    setTimeSelectValue('event-end-time', `${String(endH).padStart(2, '0')}:00`);
     // 自分をデフォルトで参加者チェック
     const selfCb = document.getElementById(`part-${currentUser.id}`);
     if (selfCb) selfCb.checked = true;
@@ -2483,6 +2544,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  // 時刻セレクトを初期化
+  initTimeSelects();
 
   // ============================================================
   // アプリ起動
