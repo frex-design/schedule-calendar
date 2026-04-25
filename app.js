@@ -154,169 +154,123 @@ let editingEventId = null;        // 編集中イベントID（nullで新規）
 // ----------------------------------------
 
 /**
- * カスタム時刻ピッカー（5分刻み、時・分の2列スクロール式）
+ * カスタム時刻ピッカー（インライン直接入力、5分刻み）
+ * タイプ・矢印キー↑↓で時・分を変更。余計なUIなし。
  */
-const _tp = {}; // ピッカー状態を id で管理
+const _tp = {};
 
 function initTimePickers() {
   _buildTimePicker('event-start-time');
   _buildTimePicker('event-end-time');
-  // 開始時刻が変わったら終了を自動+1時間
   document.getElementById('event-start-time').addEventListener('tp-change', autoFillEndTime);
 }
 
 function _buildTimePicker(hiddenId) {
   const hidden = document.getElementById(hiddenId);
   if (!hidden) return;
-
   const wrap = hidden.parentElement;
+  const [initH, initM] = (hidden.value || '09:00').split(':');
 
-  // トリガーボタン
-  const trigger = document.createElement('div');
-  trigger.className = 'tp-trigger';
-  trigger.tabIndex = 0;
-  trigger.innerHTML = `
-    <span class="tp-display">${hidden.value || '09:00'}</span>
-    <svg class="tp-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
-      <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-  wrap.insertBefore(trigger, hidden);
+  const container = document.createElement('div');
+  container.className = 'tp-inline';
 
-  // ドロップダウン（body 直下に置いて modal の overflow を回避）
-  const dropdown = document.createElement('div');
-  dropdown.className = 'tp-dropdown';
-  dropdown.style.display = 'none';
+  const hInput = document.createElement('input');
+  hInput.type = 'text';
+  hInput.className = 'tp-field tp-hour';
+  hInput.value = String(initH).padStart(2, '0');
+  hInput.maxLength = 2;
+  hInput.inputMode = 'numeric';
 
-  const hourCol = document.createElement('div');
-  hourCol.className = 'tp-col';
-  for (let h = 0; h < 24; h++) {
-    const el = document.createElement('div');
-    el.className = 'tp-item';
-    el.textContent = String(h).padStart(2, '0');
-    el.dataset.h = String(h).padStart(2, '0');
-    hourCol.appendChild(el);
+  const colon = document.createElement('span');
+  colon.className = 'tp-colon';
+  colon.textContent = ':';
+
+  const mInput = document.createElement('input');
+  mInput.type = 'text';
+  mInput.className = 'tp-field tp-minute';
+  mInput.value = String(initM).padStart(2, '0');
+  mInput.maxLength = 2;
+  mInput.inputMode = 'numeric';
+
+  container.append(hInput, colon, mInput);
+  wrap.insertBefore(container, hidden);
+
+  function commit(fireEvent = true) {
+    const hNum = Math.min(23, Math.max(0, parseInt(hInput.value) || 0));
+    const mRaw = parseInt(mInput.value) || 0;
+    const mNum = Math.min(55, Math.round(mRaw / 5) * 5);
+    hInput.value = String(hNum).padStart(2, '0');
+    mInput.value = String(mNum).padStart(2, '0');
+    hidden.value = `${hInput.value}:${mInput.value}`;
+    if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: hidden.value }));
   }
 
-  const sep = document.createElement('div');
-  sep.className = 'tp-col-sep';
-  sep.textContent = ':';
-
-  const minCol = document.createElement('div');
-  minCol.className = 'tp-col';
-  for (let m = 0; m < 60; m += 5) {
-    const el = document.createElement('div');
-    el.className = 'tp-item';
-    el.textContent = String(m).padStart(2, '0');
-    el.dataset.m = String(m).padStart(2, '0');
-    minCol.appendChild(el);
-  }
-
-  dropdown.append(hourCol, sep, minCol);
-  document.body.appendChild(dropdown);
-
-  const state = { trigger, dropdown, hourCol, minCol, hidden, open: false };
-  _tp[hiddenId] = state;
-
-  // --- ヘルパー ---
-  function currentHM() {
-    const [h, m] = (hidden.value || '09:00').split(':');
-    return { h, m };
-  }
-
-  function highlight() {
-    const { h, m } = currentHM();
-    hourCol.querySelectorAll('.tp-item').forEach(el =>
-      el.classList.toggle('active', el.dataset.h === h));
-    minCol.querySelectorAll('.tp-item').forEach(el =>
-      el.classList.toggle('active', el.dataset.m === m));
-    // アクティブ行をスクロールして中央へ
-    const ah = hourCol.querySelector('.tp-item.active');
-    const am = minCol.querySelector('.tp-item.active');
-    if (ah) hourCol.scrollTop = ah.offsetTop - hourCol.clientHeight / 2 + ah.clientHeight / 2;
-    if (am) minCol.scrollTop = am.offsetTop - minCol.clientHeight / 2 + am.clientHeight / 2;
-  }
-
-  function setVal(timeStr, fireEvent = true) {
-    // 5分刻みにスナップ
-    const [hh, mm] = timeStr.split(':').map(Number);
-    const mSnapped = Math.min(55, Math.round(mm / 5) * 5);
-    const normalized = `${String(hh).padStart(2,'0')}:${String(mSnapped).padStart(2,'0')}`;
-    hidden.value = normalized;
-    trigger.querySelector('.tp-display').textContent = normalized;
-    highlight();
-    if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: normalized }));
-  }
-  state.setVal = setVal;
-
-  function position() {
-    const r = trigger.getBoundingClientRect();
-    dropdown.style.top  = `${r.bottom + 4}px`;
-    dropdown.style.left = `${r.left}px`;
-    dropdown.style.minWidth = `${r.width}px`;
-  }
-
-  function openPicker() {
-    // 他のピッカーを閉じる
-    Object.values(_tp).forEach(s => { if (s !== state) closePicker(s); });
-    position();
-    dropdown.style.display = 'flex';
-    trigger.classList.add('open');
-    state.open = true;
-    highlight();
-  }
-
-  function closePicker(s = state) {
-    s.dropdown.style.display = 'none';
-    s.trigger.classList.remove('open');
-    s.open = false;
-  }
-
-  // --- イベント ---
-  trigger.addEventListener('click', () => state.open ? closePicker() : openPicker());
-  trigger.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
-    if (e.key === 'Escape') closePicker();
-  });
-
-  hourCol.addEventListener('click', e => {
-    const item = e.target.closest('.tp-item');
-    if (!item) return;
-    setVal(`${item.dataset.h}:${currentHM().m}`);
-  });
-
-  minCol.addEventListener('click', e => {
-    const item = e.target.closest('.tp-item');
-    if (!item) return;
-    setVal(`${currentHM().h}:${item.dataset.m}`);
-    closePicker();
-  });
-
-  document.addEventListener('mousedown', e => {
-    if (state.open && !trigger.contains(e.target) && !dropdown.contains(e.target)) {
-      closePicker();
+  // 時フィールド
+  hInput.addEventListener('focus', () => hInput.select());
+  hInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      let v = (parseInt(hInput.value) || 0) + 1;
+      hInput.value = String(v > 23 ? 0 : v).padStart(2, '0');
+      commit();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      let v = (parseInt(hInput.value) || 0) - 1;
+      hInput.value = String(v < 0 ? 23 : v).padStart(2, '0');
+      commit();
+    } else if (e.key === ':') {
+      e.preventDefault();
+      mInput.focus(); mInput.select();
     }
   });
+  hInput.addEventListener('input', () => {
+    if (hInput.value.length >= 2) { mInput.focus(); mInput.select(); }
+  });
+  hInput.addEventListener('blur', () => commit());
+
+  // 分フィールド
+  mInput.addEventListener('focus', () => mInput.select());
+  mInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      let v = (parseInt(mInput.value) || 0) + 5;
+      mInput.value = String(v >= 60 ? 0 : v).padStart(2, '0');
+      commit();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      let v = (parseInt(mInput.value) || 0) - 5;
+      mInput.value = String(v < 0 ? 55 : v).padStart(2, '0');
+      commit();
+    }
+  });
+  mInput.addEventListener('blur', () => commit());
+
+  _tp[hiddenId] = {
+    hInput, mInput, hidden,
+    setVal(timeStr, fireEvent = true) {
+      const [hv, mv] = (timeStr || '09:00').split(':');
+      const hNum = Math.min(23, Math.max(0, parseInt(hv) || 0));
+      const mNum = Math.min(55, Math.round((parseInt(mv) || 0) / 5) * 5);
+      hInput.value = String(hNum).padStart(2, '0');
+      mInput.value = String(mNum).padStart(2, '0');
+      hidden.value = `${hInput.value}:${mInput.value}`;
+      if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: hidden.value }));
+    }
+  };
 }
 
-/** 外部から時刻をセット（自動入力時は tp-change を発火しない） */
 function tpSetValue(hiddenId, timeStr) {
   const s = _tp[hiddenId];
   if (s) s.setVal(timeStr, false);
-  else {
-    const el = document.getElementById(hiddenId);
-    if (el) el.value = timeStr;
-  }
 }
 
-/** 開始時刻 +1時間 を終了時刻にセット */
 function autoFillEndTime() {
   const val = document.getElementById('event-start-time').value;
   if (!val) return;
   const [h, m] = val.split(':').map(Number);
-  let endH = h + 1, endM = m;
-  if (endH >= 24) { endH = 23; endM = 55; }
-  tpSetValue('event-end-time', `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`);
+  let endH = h + 1;
+  if (endH >= 24) endH = 23;
+  tpSetValue('event-end-time', `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
 }
 
 /**
