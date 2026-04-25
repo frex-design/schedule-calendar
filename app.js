@@ -2410,16 +2410,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-close-guide-modal').addEventListener('click', () => closeModal('guide-modal'));
 
-  // iCalボタン
-  document.getElementById('btn-ical').addEventListener('click', openIcalModal);
-  document.getElementById('btn-close-ical-modal').addEventListener('click', () => closeModal('ical-modal'));
-  document.getElementById('btn-download-ical').addEventListener('click', downloadIcal);
-  // iCal期間変更 → 件数プレビュー更新
-  document.getElementById('ical-start').addEventListener('change', updateIcalCount);
-  document.getElementById('ical-end').addEventListener('change', updateIcalCount);
-  document.querySelectorAll('input[name="ical-target"]').forEach(r =>
-    r.addEventListener('change', updateIcalCount)
-  );
 
   // カレンダーナビゲーション
   document.getElementById('btn-prev').addEventListener('click', navigatePrev);
