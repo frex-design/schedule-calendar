@@ -1782,51 +1782,35 @@ ul, ol { list-style: none; }
   font-weight: 400;
 }
 
-/* ===== カスタム時刻ピッカー（インライン直接入力） ===== */
-.tp-wrap { position: relative; }
-
-.tp-inline {
-  display: inline-flex;
+/* ===== 時刻セレクト ===== */
+.time-row {
+  display: flex;
   align-items: center;
-  gap: 1px;
-  padding: 8px 14px;
-  border: 1.5px solid var(--bb-light);
-  border-radius: var(--radius-input);
-  background: var(--bb-white);
-  cursor: text;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  width: 100%;
-  box-sizing: border-box;
+  gap: 8px;
 }
-.tp-inline:focus-within {
+
+.time-sel {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 88px;
+  padding: 9px 26px 9px 10px;
+  border: 1px solid var(--bb-light);
+  border-radius: var(--radius-input);
+  background-color: var(--bb-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767676' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  color: var(--bb-dark);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.time-sel:hover { border-color: var(--bb-mid); }
+.time-sel:focus {
+  outline: none;
   border-color: var(--bb-blue);
   box-shadow: 0 0 0 2px rgba(0,169,224,0.15);
-}
-
-.tp-field {
-  font-size: 18px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
-  width: 2ch;
-  border: none;
-  background: transparent;
-  text-align: center;
-  color: var(--bb-dark);
-  outline: none;
-  padding: 0;
-  line-height: 1;
-  caret-color: var(--bb-blue);
-}
-.tp-field:focus { color: var(--bb-blue); }
-
-.tp-colon {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--bb-light);
-  line-height: 1;
-  padding: 0 2px;
-  user-select: none;
 }
 
 /* 参加者リスト */

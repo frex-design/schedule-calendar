@@ -154,114 +154,30 @@ let editingEventId = null;        // 編集中イベントID（nullで新規）
 // ----------------------------------------
 
 /**
- * カスタム時刻ピッカー（インライン直接入力、5分刻み）
- * タイプ・矢印キー↑↓で時・分を変更。余計なUIなし。
+ * 時刻セレクトの初期化（5分刻み）
  */
-const _tp = {};
-
 function initTimePickers() {
-  _buildTimePicker('event-start-time');
-  _buildTimePicker('event-end-time');
-  document.getElementById('event-start-time').addEventListener('tp-change', autoFillEndTime);
-}
-
-function _buildTimePicker(hiddenId) {
-  const hidden = document.getElementById(hiddenId);
-  if (!hidden) return;
-  const wrap = hidden.parentElement;
-  const [initH, initM] = (hidden.value || '09:00').split(':');
-
-  const container = document.createElement('div');
-  container.className = 'tp-inline';
-
-  const hInput = document.createElement('input');
-  hInput.type = 'text';
-  hInput.className = 'tp-field tp-hour';
-  hInput.value = String(initH).padStart(2, '0');
-  hInput.maxLength = 2;
-  hInput.inputMode = 'numeric';
-
-  const colon = document.createElement('span');
-  colon.className = 'tp-colon';
-  colon.textContent = ':';
-
-  const mInput = document.createElement('input');
-  mInput.type = 'text';
-  mInput.className = 'tp-field tp-minute';
-  mInput.value = String(initM).padStart(2, '0');
-  mInput.maxLength = 2;
-  mInput.inputMode = 'numeric';
-
-  container.append(hInput, colon, mInput);
-  wrap.insertBefore(container, hidden);
-
-  function commit(fireEvent = true) {
-    const hNum = Math.min(23, Math.max(0, parseInt(hInput.value) || 0));
-    const mRaw = parseInt(mInput.value) || 0;
-    const mNum = Math.min(55, Math.round(mRaw / 5) * 5);
-    hInput.value = String(hNum).padStart(2, '0');
-    mInput.value = String(mNum).padStart(2, '0');
-    hidden.value = `${hInput.value}:${mInput.value}`;
-    if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: hidden.value }));
+  const opts = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 5) {
+      opts.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+    }
   }
-
-  // 時フィールド
-  hInput.addEventListener('focus', () => hInput.select());
-  hInput.addEventListener('keydown', e => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      let v = (parseInt(hInput.value) || 0) + 1;
-      hInput.value = String(v > 23 ? 0 : v).padStart(2, '0');
-      commit();
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      let v = (parseInt(hInput.value) || 0) - 1;
-      hInput.value = String(v < 0 ? 23 : v).padStart(2, '0');
-      commit();
-    } else if (e.key === ':') {
-      e.preventDefault();
-      mInput.focus(); mInput.select();
-    }
+  const html = opts.map(t => `<option value="${t}">${t}</option>`).join('');
+  ['event-start-time', 'event-end-time'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.innerHTML = html;
   });
-  hInput.addEventListener('input', () => {
-    if (hInput.value.length >= 2) { mInput.focus(); mInput.select(); }
-  });
-  hInput.addEventListener('blur', () => commit());
-
-  // 分フィールド
-  mInput.addEventListener('focus', () => mInput.select());
-  mInput.addEventListener('keydown', e => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      let v = (parseInt(mInput.value) || 0) + 5;
-      mInput.value = String(v >= 60 ? 0 : v).padStart(2, '0');
-      commit();
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      let v = (parseInt(mInput.value) || 0) - 5;
-      mInput.value = String(v < 0 ? 55 : v).padStart(2, '0');
-      commit();
-    }
-  });
-  mInput.addEventListener('blur', () => commit());
-
-  _tp[hiddenId] = {
-    hInput, mInput, hidden,
-    setVal(timeStr, fireEvent = true) {
-      const [hv, mv] = (timeStr || '09:00').split(':');
-      const hNum = Math.min(23, Math.max(0, parseInt(hv) || 0));
-      const mNum = Math.min(55, Math.round((parseInt(mv) || 0) / 5) * 5);
-      hInput.value = String(hNum).padStart(2, '0');
-      mInput.value = String(mNum).padStart(2, '0');
-      hidden.value = `${hInput.value}:${mInput.value}`;
-      if (fireEvent) hidden.dispatchEvent(new CustomEvent('tp-change', { detail: hidden.value }));
-    }
-  };
+  document.getElementById('event-start-time').addEventListener('change', autoFillEndTime);
 }
 
-function tpSetValue(hiddenId, timeStr) {
-  const s = _tp[hiddenId];
-  if (s) s.setVal(timeStr, false);
+function tpSetValue(id, timeStr) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  // 5分刻みにスナップして選択
+  const [hv, mv] = (timeStr || '09:00').split(':').map(Number);
+  const mSnapped = Math.min(55, Math.round(mv / 5) * 5);
+  sel.value = `${String(hv).padStart(2,'0')}:${String(mSnapped).padStart(2,'0')}`;
 }
 
 function autoFillEndTime() {
@@ -270,7 +186,7 @@ function autoFillEndTime() {
   const [h, m] = val.split(':').map(Number);
   let endH = h + 1;
   if (endH >= 24) endH = 23;
-  tpSetValue('event-end-time', `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+  tpSetValue('event-end-time', `${String(endH).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
 }
 
 /**
