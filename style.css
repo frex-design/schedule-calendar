@@ -1,27 +1,26 @@
 /* ============================================================
-   FRe:x Schedule — Blue Bottle Coffee Design
+   FRe:x Schedule
    ============================================================ */
 
 /* ----------------------------------------
    CSS カスタムプロパティ
    ---------------------------------------- */
 :root {
-  /* Blue Bottle カラーパレット */
-  --bb-cream:    #f5f0eb;   /* メイン背景 */
-  --bb-beige:    #ede4d9;   /* サブ背景・ホバー */
-  --bb-warm:     #f1e4d8;   /* アクセント背景 */
-  --bb-brown:    #a17c51;   /* ウォームアクセント */
+  --bb-cream:    #f4f5f7;   /* メイン背景 */
+  --bb-beige:    #eaecef;   /* サブ背景・ホバー */
+  --bb-warm:     #e8edf2;   /* アクセント背景 */
+  --bb-brown:    #5a7fa8;   /* アクセント（ブルーグレー） */
   --bb-blue:     #00a9e0;   /* プライマリアクション */
   --bb-blue-lt:  #e0f5fc;   /* ブルー薄 */
   --bb-dark:     #1a1a1a;   /* ヘッダー・メインテキスト */
-  --bb-mid:      #767676;   /* サブテキスト */
-  --bb-light:    #d4c9bd;   /* ボーダー */
+  --bb-mid:      #6b7280;   /* サブテキスト */
+  --bb-light:    #d1d5db;   /* ボーダー */
   --bb-white:    #ffffff;
   --bb-error:    #b94040;
-  --bb-sat:      #d6e8f5;   /* 土曜背景（薄ブルー） */
-  --bb-sun:      #f5dcd6;   /* 日祝背景（薄テラコッタ） */
-  --bb-sat-txt:  #2c6491;
-  --bb-sun-txt:  #8b2a1a;
+  --bb-sat:      #dbeafe;   /* 土曜背景（薄ブルー） */
+  --bb-sun:      #fee2e2;   /* 日祝背景（薄レッド） */
+  --bb-sat-txt:  #1d4ed8;
+  --bb-sun-txt:  #b91c1c;
 
   /* セマンティックエイリアス */
   --primary:       var(--bb-blue);
@@ -1017,7 +1016,7 @@ ul, ol { list-style: none; }
 }
 
 .group-schedule-table th {
-  background: #f7f6f4;
+  background: #eaecef;
   color: var(--bb-dark);
   font-size: 12px;
   font-weight: 400;
