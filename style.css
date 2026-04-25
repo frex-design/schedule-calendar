@@ -1766,7 +1766,20 @@ ul, ol { list-style: none; }
   box-shadow: 0 0 0 2px rgba(0,169,224,0.15);
 }
 
-.event-type-icon { font-size: 16px; }
+.event-type-icon { display: flex; align-items: center; justify-content: center; height: 20px; }
+.event-type-icon svg { width: 17px; height: 17px; }
+
+/* ============ Lucide SVG アイコン共通サイズ ============ */
+.header-icon-btn svg   { width: 16px; height: 16px; display: block; }
+.modal-close svg       { width: 16px; height: 16px; display: block; }
+.sidebar-nav-btn svg   { width: 15px; height: 15px; flex-shrink: 0; }
+.modal-title svg       { width: 16px; height: 16px; vertical-align: text-bottom; margin-right: 4px; }
+.todo-title svg        { width: 20px; height: 20px; vertical-align: text-bottom; margin-right: 4px; }
+.guide-section-title svg { width: 14px; height: 14px; vertical-align: text-bottom; margin-right: 3px; }
+.guide-type-chip svg   { width: 13px; height: 13px; vertical-align: middle; margin-right: 2px; }
+.ical-service-btn svg  { width: 14px; height: 14px; vertical-align: middle; }
+.form-label svg        { width: 13px; height: 13px; vertical-align: middle; margin-right: 3px; }
+.btn svg               { width: 14px; height: 14px; vertical-align: middle; margin-right: 3px; }
 
 /* 時刻グリッド */
 .time-grid {

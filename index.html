@@ -16,6 +16,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
   </noscript>
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
   <!-- Supabase JS SDK (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -66,7 +69,7 @@
        ======================================== -->
   <div id="auth-screen" class="hidden">
     <div class="auth-container">
-      <!-- ロゴヘッダー: PlayStation コンソール的な黒背景＋大きなライトウェイト見出し -->
+      <!-- ロゴヘッダー -->
       <div class="auth-header">
         <div class="auth-logo">FRe:<span>x</span> Schedule</div>
         <div class="auth-subtitle">社員グループスケジュール管理ツール</div>
@@ -74,7 +77,7 @@
 
       <!-- 認証フォーム本体 -->
       <div class="auth-body">
-        <!-- タブ: PlayStation Blue アンダーライン -->
+        <!-- タブ -->
         <div class="auth-tabs">
           <div class="auth-tab active" data-tab="login">ログイン</div>
           <div class="auth-tab" data-tab="signup">新規登録</div>
@@ -162,8 +165,12 @@
       <!-- ユーザー情報（右端） -->
       <div class="header-user">
         <span class="header-user-name" id="header-user-name">読み込み中...</span>
-        <button class="header-icon-btn" id="btn-settings" title="アカウント設定">⚙</button>
-        <button class="header-icon-btn" id="btn-guide" title="操作ガイド">?</button>
+        <button class="header-icon-btn" id="btn-settings" title="アカウント設定">
+          <i data-lucide="settings"></i>
+        </button>
+        <button class="header-icon-btn" id="btn-guide" title="操作ガイド">
+          <i data-lucide="help-circle"></i>
+        </button>
         <button class="header-logout-btn" id="btn-logout">ログアウト</button>
       </div>
     </header>
@@ -196,8 +203,12 @@
 
         <!-- サイドバーナビゲーション -->
         <nav class="sidebar-nav">
-          <button class="sidebar-nav-btn active" id="nav-schedule">📅 スケジュール</button>
-          <button class="sidebar-nav-btn" id="nav-todo">✅ TODOリスト</button>
+          <button class="sidebar-nav-btn active" id="nav-schedule">
+            <i data-lucide="calendar"></i> スケジュール
+          </button>
+          <button class="sidebar-nav-btn" id="nav-todo">
+            <i data-lucide="check-square"></i> TODOリスト
+          </button>
         </nav>
       </aside>
 
@@ -237,7 +248,7 @@
         <div id="page-todo" class="hidden" style="overflow-y:auto;flex:1;">
           <div class="todo-page">
             <div class="todo-header">
-              <h1 class="todo-title">✅ TODOリスト</h1>
+              <h1 class="todo-title"><i data-lucide="check-square"></i> TODOリスト</h1>
               <button class="btn btn-primary" id="btn-add-todo">＋ TODO追加</button>
             </div>
 
@@ -285,7 +296,9 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
       <div class="modal-header">
         <h2 class="modal-title" id="modal-title-text">予定を追加</h2>
-        <button class="modal-close" id="btn-close-event-modal" aria-label="閉じる">✕</button>
+        <button class="modal-close" id="btn-close-event-modal" aria-label="閉じる">
+          <i data-lucide="x"></i>
+        </button>
       </div>
 
       <form id="event-form">
@@ -298,42 +311,42 @@
             <div class="event-type-grid">
               <button type="button" class="event-type-btn selected" data-type="other"
                       style="background:#ECEFF1;color:#607D8B;">
-                <span class="event-type-icon">📌</span>
+                <span class="event-type-icon"><i data-lucide="bookmark"></i></span>
                 <span>その他</span>
               </button>
               <button type="button" class="event-type-btn" data-type="telework"
                       style="background:#E8F5E9;color:#4CAF50;">
-                <span class="event-type-icon">🏠</span>
+                <span class="event-type-icon"><i data-lucide="home"></i></span>
                 <span>テレワーク</span>
               </button>
               <button type="button" class="event-type-btn" data-type="tele-half"
                       style="background:#E3F2FD;color:#2196F3;">
-                <span class="event-type-icon">🏡</span>
+                <span class="event-type-icon"><i data-lucide="laptop"></i></span>
                 <span>テレハーフ</span>
               </button>
               <button type="button" class="event-type-btn" data-type="meeting"
                       style="background:#BBDEFB;color:#1565C0;">
-                <span class="event-type-icon">📋</span>
+                <span class="event-type-icon"><i data-lucide="users"></i></span>
                 <span>会議</span>
               </button>
               <button type="button" class="event-type-btn" data-type="visitor"
                       style="background:#E1F5FE;color:#4FC3F7;">
-                <span class="event-type-icon">🤝</span>
+                <span class="event-type-icon"><i data-lucide="user-plus"></i></span>
                 <span>来客</span>
               </button>
               <button type="button" class="event-type-btn" data-type="out"
                       style="background:#FFF3E0;color:#FF9800;">
-                <span class="event-type-icon">🚗</span>
+                <span class="event-type-icon"><i data-lucide="car"></i></span>
                 <span>外出</span>
               </button>
               <button type="button" class="event-type-btn" data-type="business-trip"
                       style="background:#F3E5F5;color:#9C27B0;">
-                <span class="event-type-icon">✈️</span>
+                <span class="event-type-icon"><i data-lucide="plane"></i></span>
                 <span>出張</span>
               </button>
               <button type="button" class="event-type-btn" data-type="holiday"
                       style="background:#FFEBEE;color:#F44336;">
-                <span class="event-type-icon">🌴</span>
+                <span class="event-type-icon"><i data-lucide="umbrella"></i></span>
                 <span>休み</span>
               </button>
             </div>
@@ -418,7 +431,9 @@
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
         <h2 class="modal-title">予定の詳細</h2>
-        <button class="modal-close" id="btn-close-detail-modal" aria-label="閉じる">✕</button>
+        <button class="modal-close" id="btn-close-detail-modal" aria-label="閉じる">
+          <i data-lucide="x"></i>
+        </button>
       </div>
       <div class="modal-body" id="event-detail-content">
         <!-- JavaScript で描画 -->
@@ -435,8 +450,10 @@
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <h2 class="modal-title">⚙ アカウント設定</h2>
-        <button class="modal-close" id="btn-close-profile-modal" aria-label="閉じる">✕</button>
+        <h2 class="modal-title"><i data-lucide="settings"></i> アカウント設定</h2>
+        <button class="modal-close" id="btn-close-profile-modal" aria-label="閉じる">
+          <i data-lucide="x"></i>
+        </button>
       </div>
       <form id="profile-form">
         <div class="modal-body">
@@ -478,7 +495,7 @@
 
           <!-- iCal 購読URL -->
           <div class="form-group">
-            <label class="form-label">📅 iCal 購読URL（ライブ連携）</label>
+            <label class="form-label"><i data-lucide="rss"></i> iCal 購読URL（ライブ連携）</label>
             <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7;">
               このURLをGoogleカレンダー・Apple カレンダー等に登録すると、<br>
               常に最新の予定が自動同期されます。URLは他人に見せないでください。
@@ -508,10 +525,10 @@
                 Googleカレンダーに追加
               </a>
               <button type="button" class="ical-service-btn" onclick="copyIcalUrl('self');showToast('URLをコピーしました。カレンダーアプリの「URLから登録」に貼り付けてください。','info')">
-                🍎 Apple / Outlook
+                <i data-lucide="link"></i> Apple / Outlook
               </button>
               <button type="button" class="ical-service-btn ical-service-reset" onclick="resetIcalToken()">
-                🔄 URLを再発行
+                <i data-lucide="refresh-cw"></i> URLを再発行
               </button>
             </div>
           </div>
@@ -532,13 +549,15 @@
   <div id="guide-modal" class="modal-overlay hidden">
     <div class="modal modal-wide" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <h2 class="modal-title">? 操作ガイド</h2>
-        <button class="modal-close" id="btn-close-guide-modal" aria-label="閉じる">✕</button>
+        <h2 class="modal-title"><i data-lucide="help-circle"></i> 操作ガイド</h2>
+        <button class="modal-close" id="btn-close-guide-modal" aria-label="閉じる">
+          <i data-lucide="x"></i>
+        </button>
       </div>
       <div class="modal-body guide-body">
 
         <div class="guide-section">
-          <div class="guide-section-title">📅 ビューの切り替え</div>
+          <div class="guide-section-title"><i data-lucide="layout"></i> ビューの切り替え</div>
           <div class="guide-section-body">
             <div class="guide-row"><span class="guide-label">グループ週</span><span>全社員の1週間の予定を一覧で確認できます。社員名の行をクリックすると予定を追加できます。</span></div>
             <div class="guide-row"><span class="guide-label">個人日</span><span>時間軸で1日の予定を詳細に確認・追加できます。</span></div>
@@ -548,7 +567,7 @@
         </div>
 
         <div class="guide-section">
-          <div class="guide-section-title">＋ 予定の追加・編集</div>
+          <div class="guide-section-title"><i data-lucide="plus-circle"></i> 予定の追加・編集</div>
           <div class="guide-section-body">
             <div class="guide-row"><span class="guide-label">追加</span><span>「＋ 予定追加」ボタン、またはカレンダーのセルをクリックして予定を登録します。</span></div>
             <div class="guide-row"><span class="guide-label">編集</span><span>予定をクリックすると詳細が表示され、「編集」ボタンから変更できます。</span></div>
@@ -558,41 +577,41 @@
         </div>
 
         <div class="guide-section">
-          <div class="guide-section-title">🎨 予定タイプ</div>
+          <div class="guide-section-title"><i data-lucide="tag"></i> 予定タイプ</div>
           <div class="guide-section-body guide-types">
-            <div class="guide-type-chip" style="background:#E8F5E9;color:#4CAF50;">🏠 テレワーク</div>
-            <div class="guide-type-chip" style="background:#E3F2FD;color:#2196F3;">🏡 テレハーフ</div>
-            <div class="guide-type-chip" style="background:#BBDEFB;color:#1565C0;">📋 会議</div>
-            <div class="guide-type-chip" style="background:#E1F5FE;color:#4FC3F7;">🤝 来客</div>
-            <div class="guide-type-chip" style="background:#FFF3E0;color:#FF9800;">🚗 外出</div>
-            <div class="guide-type-chip" style="background:#F3E5F5;color:#9C27B0;">✈️ 出張</div>
-            <div class="guide-type-chip" style="background:#FFEBEE;color:#F44336;">🌴 休み</div>
-            <div class="guide-type-chip" style="background:#ECEFF1;color:#607D8B;">📌 その他</div>
+            <div class="guide-type-chip" style="background:#E8F5E9;color:#4CAF50;"><i data-lucide="home"></i> テレワーク</div>
+            <div class="guide-type-chip" style="background:#E3F2FD;color:#2196F3;"><i data-lucide="laptop"></i> テレハーフ</div>
+            <div class="guide-type-chip" style="background:#BBDEFB;color:#1565C0;"><i data-lucide="users"></i> 会議</div>
+            <div class="guide-type-chip" style="background:#E1F5FE;color:#4FC3F7;"><i data-lucide="user-plus"></i> 来客</div>
+            <div class="guide-type-chip" style="background:#FFF3E0;color:#FF9800;"><i data-lucide="car"></i> 外出</div>
+            <div class="guide-type-chip" style="background:#F3E5F5;color:#9C27B0;"><i data-lucide="plane"></i> 出張</div>
+            <div class="guide-type-chip" style="background:#FFEBEE;color:#F44336;"><i data-lucide="umbrella"></i> 休み</div>
+            <div class="guide-type-chip" style="background:#ECEFF1;color:#607D8B;"><i data-lucide="bookmark"></i> その他</div>
           </div>
         </div>
 
         <div class="guide-section">
-          <div class="guide-section-title">✅ TODOリスト</div>
+          <div class="guide-section-title"><i data-lucide="check-square"></i> TODOリスト</div>
           <div class="guide-section-body">
-            <div class="guide-row"><span class="guide-label">追加</span><span>左サイドバーの「✅ TODOリスト」を選択し、「＋ TODO追加」から登録します。</span></div>
+            <div class="guide-row"><span class="guide-label">追加</span><span>左サイドバーの「TODOリスト」を選択し、「＋ TODO追加」から登録します。</span></div>
             <div class="guide-row"><span class="guide-label">完了</span><span>チェックボックスをクリックすると完了/未完了を切り替えられます。</span></div>
             <div class="guide-row"><span class="guide-label">優先度</span><span>高・中・低の3段階で設定でき、色分けして表示されます。</span></div>
           </div>
         </div>
 
         <div class="guide-section">
-          <div class="guide-section-title">📤 iCal連携（Googleカレンダー等）</div>
+          <div class="guide-section-title"><i data-lucide="rss"></i> iCal連携（Googleカレンダー等）</div>
           <div class="guide-section-body">
-            <div class="guide-row"><span class="guide-label">エクスポート</span><span>「iCal」ボタンから期間を選んで .ics ファイルをダウンロードできます。</span></div>
-            <div class="guide-row"><span class="guide-label">インポート方法</span><span>Googleカレンダー → 設定 → 「インポート」から .ics ファイルを選択してアップロードします。</span></div>
-            <div class="guide-row"><span class="guide-label">iCal / Outlook</span><span>Apple カレンダーや Outlook でも同様に .ics ファイルをインポートできます。</span></div>
+            <div class="guide-row"><span class="guide-label">購読URL</span><span>設定モーダルの「iCal 購読URL」をカレンダーアプリに登録すると常に最新の予定が自動同期されます。</span></div>
+            <div class="guide-row"><span class="guide-label">インポート方法</span><span>Googleカレンダー → 設定 → 「URLでカレンダーを追加」にURLを貼り付けます。</span></div>
+            <div class="guide-row"><span class="guide-label">iCal / Outlook</span><span>Apple カレンダーや Outlook でも同様にURLを購読できます。</span></div>
           </div>
         </div>
 
         <div class="guide-section">
-          <div class="guide-section-title">⚙ その他</div>
+          <div class="guide-section-title"><i data-lucide="settings"></i> その他</div>
           <div class="guide-section-body">
-            <div class="guide-row"><span class="guide-label">設定</span><span>ヘッダーの ⚙ ボタンから氏名・メールアドレス・パスワードを変更できます。</span></div>
+            <div class="guide-row"><span class="guide-label">設定</span><span>ヘッダーの設定ボタンから氏名・メールアドレス・パスワードを変更できます。</span></div>
             <div class="guide-row"><span class="guide-label">社員順序</span><span>グループビューの社員並び順は管理者が変更できます（現在：氏名のアルファベット順）。</span></div>
           </div>
         </div>
@@ -610,8 +629,10 @@
   <div id="ical-modal" class="modal-overlay hidden">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <h2 class="modal-title">📤 iCalエクスポート</h2>
-        <button class="modal-close" id="btn-close-ical-modal" aria-label="閉じる">✕</button>
+        <h2 class="modal-title"><i data-lucide="upload"></i> iCalエクスポート</h2>
+        <button class="modal-close" id="btn-close-ical-modal" aria-label="閉じる">
+          <i data-lucide="x"></i>
+        </button>
       </div>
       <div class="modal-body">
         <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7;">
@@ -655,7 +676,9 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('ical-modal')">キャンセル</button>
-        <button type="button" class="btn btn-primary btn-sm" id="btn-download-ical">⬇ ダウンロード</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-download-ical">
+          <i data-lucide="download"></i> ダウンロード
+        </button>
       </div>
     </div>
   </div>
