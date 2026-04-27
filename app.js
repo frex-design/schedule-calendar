@@ -857,7 +857,7 @@ function renderGroupWeek(container) {
   // ヘッダー行
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  headerRow.innerHTML = `<th class="name-col">社員名</th>`;
+  headerRow.innerHTML = `<th class="name-col">社員名<span class="name-col-hint">※あいうえお順</span></th>`;
   days.forEach(day => {
     const ds = toDateStr(day);
     const isToday = ds === today;
@@ -952,7 +952,7 @@ function renderGroupDay(container) {
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
   headerRow.innerHTML = `
-    <th class="name-col">社員名</th>
+    <th class="name-col">社員名<span class="name-col-hint">※あいうえお順</span></th>
     <th class="${ds === today ? 'today-col' : ''}">
       <span class="col-date">${currentDate.getDate()}</span>
       <span class="col-dow">${dow}</span>
