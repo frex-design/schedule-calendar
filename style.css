@@ -1753,20 +1753,25 @@ ul, ol { list-style: none; }
   font-weight: 500;
   text-align: center;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: all var(--transition);
+  border: 2px solid transparent;
+  transition: all 0.15s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
+  opacity: 0.45;
+  filter: grayscale(20%);
 }
 
 .event-type-btn.selected {
-  border-color: var(--bb-blue);
-  box-shadow: 0 0 0 2px rgba(0,169,224,0.15);
+  opacity: 1;
+  filter: none;
+  border-color: currentColor;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.13);
+  transform: scale(1.07);
 }
 
-.event-type-icon { display: flex; align-items: center; justify-content: center; height: 26px; font-size: 20px; line-height: 1; }
+.event-type-icon { display: flex; align-items: center; justify-content: center; height: 20px; }
 .event-type-icon svg { width: 17px; height: 17px; }
 
 /* ============ Lucide SVG アイコン共通サイズ ============ */
