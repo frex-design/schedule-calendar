@@ -1772,6 +1772,13 @@ ul, ol { list-style: none; }
 }
 
 .event-type-icon { display: flex; align-items: center; justify-content: center; height: 20px; }
+
+/* 非公開バッジ */
+.private-badge {
+  font-size: 11px;
+  opacity: 0.75;
+  vertical-align: middle;
+}
 .event-type-icon svg { width: 17px; height: 17px; }
 
 /* ============ Lucide SVG アイコン共通サイズ ============ */

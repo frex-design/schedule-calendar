@@ -1064,7 +1064,7 @@ function renderDayEventCard(ev) {
   const timeStr = ev.is_all_day ? '終日' : `${formatTime(ev.start_datetime)} 〜 ${formatTime(ev.end_datetime)}`;
   return `
     <div class="day-event-card" style="border-left-color:${type.color};" onclick="openEventDetail('${ev.id}')">
-      <div class="day-event-time">${type.icon} ${timeStr}</div>
+      <div class="day-event-time">${type.icon} ${timeStr}${ev.is_private ? ' <span class="private-badge">🔒</span>' : ''}</div>
       <div class="day-event-body">
         <div class="day-event-title">${escHtml(ev.title)}</div>
         <div class="day-event-meta">
@@ -1242,6 +1242,7 @@ function renderEventChip(ev) {
          onclick="event.stopPropagation();openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">
       <span>${type.icon}</span>
       <span class="event-chip-title">${timeStr ? timeStr + ' ' : ''}${escHtml(ev.title)}</span>
+      ${ev.is_private ? '<span class="private-badge">🔒</span>' : ''}
     </div>`;
 }
 
@@ -1343,6 +1344,7 @@ function openEventModal(dateStr, eventId) {
       document.getElementById('event-allday').checked = ev.is_all_day;
       document.getElementById('event-memo').value = ev.memo || '';
       document.getElementById('event-facility').value = ev.facility || '';
+      document.getElementById('event-private').checked = ev.is_private || false;
 
       // 参加者にチェック
       if (ev.event_participants) {
@@ -1410,7 +1412,7 @@ function openEventDetail(eventId) {
 
   document.getElementById('event-detail-content').innerHTML = `
     <div class="event-detail-type" style="background:${type.bg};color:${type.color};">
-      ${type.icon} ${type.label}
+      ${type.icon} ${type.label}${ev.is_private ? ' <span class="private-badge">🔒 非公開</span>' : ''}
     </div>
     <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">${escHtml(ev.title)}</h2>
     <div class="event-detail-row">
@@ -1740,6 +1742,8 @@ async function submitEventForm(e) {
     }
   }
 
+  const isPrivate = document.getElementById('event-private').checked;
+
   await saveEvent({
     title,
     type,
@@ -1749,6 +1753,7 @@ async function submitEventForm(e) {
     memo,
     facility,
     participants,
+    is_private: isPrivate,
   });
 
   closeModal('event-modal');

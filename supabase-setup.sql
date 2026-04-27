@@ -390,3 +390,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS profiles_ical_token_idx ON profiles(ical_token
 
 -- RLSポリシー: ical_token は本人のみ更新可
 -- (profiles テーブルのRLSが有効な場合、SELECTポリシーは既存のものを流用)
+
+-- ============================================================
+-- 非公開予定機能 マイグレーション（追加実行）
+-- ============================================================
+
+-- events テーブルに is_private カラムを追加
+ALTER TABLE events
+  ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE;
+
+-- RLSポリシーを更新: 非公開イベントは本人のみ参照可
+DROP POLICY IF EXISTS "events_select_all" ON events;
+CREATE POLICY "events_select_all"
+  ON events FOR SELECT
+  TO authenticated
+  USING (is_private = FALSE OR user_id = auth.uid());
