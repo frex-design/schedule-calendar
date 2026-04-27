@@ -60,45 +60,58 @@ Deno.serve(async (req: Request) => {
   const rangeStart = new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString()
   const rangeEnd   = new Date(now.getFullYear() + 1, now.getMonth() + 1, 0).toISOString()
 
-  const EVENTS_SELECT = '*, profiles!events_user_id_fkey(name), event_participants(user_id), facilities(name)'
+  // events.facility は TEXT カラム（FK ではない）。facilities テーブルへの JOIN は使わない。
+  const EVENTS_SELECT = '*, profiles!events_user_id_fkey(name)'
 
   let events: Record<string, unknown>[] = []
 
   if (target === 'all') {
     // 全社員の予定
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('events')
       .select(EVENTS_SELECT)
       .gte('start_datetime', rangeStart)
       .lte('start_datetime', rangeEnd)
       .order('start_datetime')
+    if (error) {
+      console.error('events query (all) error:', error)
+      return new Response(`events query failed: ${error.message}`, { status: 500 })
+    }
     events = data || []
 
   } else {
     // 自分の予定
-    const { data: ownEvents } = await supabase
+    const { data: ownEvents, error: ownErr } = await supabase
       .from('events')
       .select(EVENTS_SELECT)
       .eq('user_id', userId)
       .gte('start_datetime', rangeStart)
       .lte('start_datetime', rangeEnd)
+    if (ownErr) {
+      console.error('events query (self) error:', ownErr)
+      return new Response(`events query failed: ${ownErr.message}`, { status: 500 })
+    }
 
     // 参加者として登録されている予定のID
-    const { data: participantRows } = await supabase
+    const { data: participantRows, error: partErr } = await supabase
       .from('event_participants')
       .select('event_id')
       .eq('user_id', userId)
+    if (partErr) {
+      console.error('event_participants query error:', partErr)
+    }
 
     const participantIds = (participantRows || []).map((p: Record<string, unknown>) => p.event_id)
 
     let participantEvents: Record<string, unknown>[] = []
     if (participantIds.length > 0) {
-      const { data } = await supabase
+      const { data, error: pevErr } = await supabase
         .from('events')
         .select(EVENTS_SELECT)
         .in('id', participantIds)
         .gte('start_datetime', rangeStart)
         .lte('start_datetime', rangeEnd)
+      if (pevErr) console.error('participant events query error:', pevErr)
       participantEvents = data || []
     }
 
@@ -210,7 +223,7 @@ function buildIcal(
   for (const ev of events) {
     const ownerProfile = (ev.profiles as Record<string, unknown>) || {}
     const ownerName    = String(ownerProfile.name || '')
-    const facility     = (ev.facilities as Record<string, unknown>) || null
+    const facilityName = String(ev.facility || '')
     const typeLabel    = EVENT_TYPES[String(ev.type || '')] || 'その他'
 
     const summary = allUsers && ownerName
@@ -239,8 +252,8 @@ function buildIcal(
     }
 
     lines.push(`SUMMARY:${summary}`)
-    if (ev.memo)       lines.push(`DESCRIPTION:${esc(ev.memo)}`)
-    if (facility?.name) lines.push(`LOCATION:${esc(facility.name)}`)
+    if (ev.memo)     lines.push(`DESCRIPTION:${esc(ev.memo)}`)
+    if (facilityName) lines.push(`LOCATION:${esc(facilityName)}`)
     lines.push(`CATEGORIES:${typeLabel}`)
     lines.push('STATUS:CONFIRMED')
     lines.push('TRANSP:OPAQUE')
