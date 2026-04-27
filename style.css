@@ -1998,35 +1998,53 @@ ul, ol { list-style: none; }
   font-weight: 400;
 }
 
-/* ===== 時刻セレクト ===== */
+/* ===== 時刻セレクト（時:分 分割） ===== */
 .time-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.time-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-colon {
+  color: var(--bb-mid);
+  font-weight: 500;
+  font-size: 14px;
+  user-select: none;
 }
 
 .time-sel {
   appearance: none;
   -webkit-appearance: none;
-  width: 88px;
-  padding: 9px 26px 9px 10px;
+  padding: 9px 22px 9px 10px;
   border: 1px solid var(--bb-light);
   border-radius: var(--radius-input);
   background-color: var(--bb-white);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767676' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 8px center;
+  background-position: right 6px center;
   color: var(--bb-dark);
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
+.time-sel-h, .time-sel-m { width: 60px; }
 .time-sel:hover { border-color: var(--bb-mid); }
 .time-sel:focus {
   outline: none;
   border-color: var(--bb-blue);
   box-shadow: 0 0 0 2px rgba(0,169,224,0.15);
+}
+.time-sel:disabled {
+  background-color: var(--bb-beige);
+  color: var(--bb-mid);
+  cursor: not-allowed;
 }
 
 /* 参加者リスト */

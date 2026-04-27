@@ -154,30 +154,58 @@ let editingEventId = null;        // 編集中イベントID（nullで新規）
 // ----------------------------------------
 
 /**
- * 時刻セレクトの初期化（5分刻み）
+ * 時刻セレクトの初期化（時:24個 / 分:5分刻み12個 を分離）
+ * 隠し input #event-start-time / #event-end-time に "HH:MM" を同期する
  */
 function initTimePickers() {
-  const opts = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 5) {
-      opts.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-    }
-  }
-  const html = opts.map(t => `<option value="${t}">${t}</option>`).join('');
-  ['event-start-time', 'event-end-time'].forEach(id => {
+  const hours = Array.from({length: 24}, (_, h) => String(h).padStart(2,'0'));
+  const minutes = Array.from({length: 12}, (_, i) => String(i * 5).padStart(2,'0'));
+  const hHtml = hours.map(h => `<option value="${h}">${h}</option>`).join('');
+  const mHtml = minutes.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  ['event-start-hour', 'event-end-hour'].forEach(id => {
     const sel = document.getElementById(id);
-    if (sel) sel.innerHTML = html;
+    if (sel) sel.innerHTML = hHtml;
   });
+  ['event-start-minute', 'event-end-minute'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.innerHTML = mHtml;
+  });
+
+  // 時/分の変更で hidden input を同期 → change イベントを発火
+  ['start', 'end'].forEach(prefix => {
+    const hSel = document.getElementById(`event-${prefix}-hour`);
+    const mSel = document.getElementById(`event-${prefix}-minute`);
+    const hidden = document.getElementById(`event-${prefix}-time`);
+    if (!hSel || !mSel || !hidden) return;
+    const sync = () => {
+      hidden.value = `${hSel.value}:${mSel.value}`;
+      hidden.dispatchEvent(new Event('change'));
+    };
+    hSel.addEventListener('change', sync);
+    mSel.addEventListener('change', sync);
+  });
+
   document.getElementById('event-start-time').addEventListener('change', autoFillEndTime);
 }
 
+/**
+ * 隠し input + 表示用セレクトを同時に設定（5分刻みにスナップ）
+ * id は 'event-start-time' / 'event-end-time'
+ */
 function tpSetValue(id, timeStr) {
-  const sel = document.getElementById(id);
-  if (!sel) return;
-  // 5分刻みにスナップして選択
+  const hidden = document.getElementById(id);
+  if (!hidden) return;
   const [hv, mv] = (timeStr || '09:00').split(':').map(Number);
   const mSnapped = Math.min(55, Math.round(mv / 5) * 5);
-  sel.value = `${String(hv).padStart(2,'0')}:${String(mSnapped).padStart(2,'0')}`;
+  const h = String(hv).padStart(2,'0');
+  const m = String(mSnapped).padStart(2,'0');
+  hidden.value = `${h}:${m}`;
+  const prefix = id === 'event-start-time' ? 'start' : 'end';
+  const hSel = document.getElementById(`event-${prefix}-hour`);
+  const mSel = document.getElementById(`event-${prefix}-minute`);
+  if (hSel) hSel.value = h;
+  if (mSel) mSel.value = m;
 }
 
 function autoFillEndTime() {
@@ -2708,8 +2736,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 終日チェックボックス
   document.getElementById('event-allday').addEventListener('change', e => {
     const disabled = e.target.checked;
-    document.getElementById('event-start-time').disabled = disabled;
-    document.getElementById('event-end-time').disabled = disabled;
+    ['event-start-hour','event-start-minute','event-end-hour','event-end-minute'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = disabled;
+    });
   });
 
   // フォーム送信

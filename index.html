@@ -411,9 +411,19 @@
             <label class="form-label">時刻</label>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
               <div class="time-row">
-                <select class="time-sel" id="event-start-time"></select>
+                <span class="time-pair">
+                  <select class="time-sel time-sel-h" id="event-start-hour"></select>
+                  <span class="time-colon">:</span>
+                  <select class="time-sel time-sel-m" id="event-start-minute"></select>
+                </span>
+                <input type="hidden" id="event-start-time">
                 <span class="time-separator">〜</span>
-                <select class="time-sel" id="event-end-time"></select>
+                <span class="time-pair">
+                  <select class="time-sel time-sel-h" id="event-end-hour"></select>
+                  <span class="time-colon">:</span>
+                  <select class="time-sel time-sel-m" id="event-end-minute"></select>
+                </span>
+                <input type="hidden" id="event-end-time">
               </div>
               <label class="checkbox-label">
                 <input type="checkbox" id="event-allday">
