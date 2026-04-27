@@ -11,14 +11,14 @@
 
 /** 予定タイプ定義（サイボウズ準拠の色分け） */
 const EVENT_TYPES = {
-  'telework':      { label: 'テレワーク',  color: '#4CAF50', bg: '#E8F5E9', icon: '🏠' },
-  'tele-half':     { label: 'テレハーフ',  color: '#2196F3', bg: '#E3F2FD', icon: '💻' },
-  'meeting':       { label: '会議',        color: '#1565C0', bg: '#BBDEFB', icon: '👥' },
-  'visitor':       { label: '来客',        color: '#0277BD', bg: '#E1F5FE', icon: '🤝' },
-  'out':           { label: '外出',        color: '#FF9800', bg: '#FFF3E0', icon: '🚗' },
-  'business-trip': { label: '出張',        color: '#9C27B0', bg: '#F3E5F5', icon: '✈️' },
-  'holiday':       { label: '休み',        color: '#F44336', bg: '#FFEBEE', icon: '🌴' },
-  'other':         { label: 'その他',      color: '#607D8B', bg: '#ECEFF1', icon: '📝' },
+  'telework':      { label: 'テレワーク',  color: '#4CAF50', bg: '#E8F5E9', icon: '🏠', lucideIcon: 'home'      },
+  'tele-half':     { label: 'テレハーフ',  color: '#2196F3', bg: '#E3F2FD', icon: '💻', lucideIcon: 'laptop'    },
+  'meeting':       { label: '会議',        color: '#1565C0', bg: '#BBDEFB', icon: '👥', lucideIcon: 'users'     },
+  'visitor':       { label: '来客',        color: '#0277BD', bg: '#E1F5FE', icon: '🤝', lucideIcon: 'user-plus' },
+  'out':           { label: '外出',        color: '#FF9800', bg: '#FFF3E0', icon: '🚗', lucideIcon: 'car'       },
+  'business-trip': { label: '出張',        color: '#9C27B0', bg: '#F3E5F5', icon: '✈️', lucideIcon: 'plane'     },
+  'holiday':       { label: '休み',        color: '#F44336', bg: '#FFEBEE', icon: '🌴', lucideIcon: 'umbrella'  },
+  'other':         { label: 'その他',      color: '#607D8B', bg: '#ECEFF1', icon: '📝', lucideIcon: 'bookmark'  },
 };
 
 /** 優先度ラベル */
@@ -802,6 +802,9 @@ function renderCurrentView() {
       break;
   }
 
+  // チップ内の Lucide アイコンを展開
+  lucide.createIcons({ context: content });
+
   updateNavPeriod();
 }
 
@@ -1064,7 +1067,7 @@ function renderDayEventCard(ev) {
   const timeStr = ev.is_all_day ? '終日' : `${formatTime(ev.start_datetime)} 〜 ${formatTime(ev.end_datetime)}`;
   return `
     <div class="day-event-card" style="border-left-color:${type.color};" onclick="openEventDetail('${ev.id}')">
-      <div class="day-event-time">${type.icon} ${timeStr}${ev.is_private ? ' <span class="private-badge">🔒</span>' : ''}</div>
+      <div class="day-event-time"><span class="chip-icon"><i data-lucide="${type.lucideIcon}"></i></span> ${timeStr}${ev.is_private ? ' <span class="private-badge">🔒</span>' : ''}</div>
       <div class="day-event-body">
         <div class="day-event-title">${escHtml(ev.title)}</div>
         <div class="day-event-meta">
@@ -1240,7 +1243,7 @@ function renderEventChip(ev) {
   return `
     <div class="event-chip" style="background:${type.bg};color:${type.color};border-left-color:${type.color};"
          onclick="event.stopPropagation();openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">
-      <span>${type.icon}</span>
+      <span class="chip-icon"><i data-lucide="${type.lucideIcon}"></i></span>
       <span class="event-chip-title">${timeStr ? timeStr + ' ' : ''}${escHtml(ev.title)}</span>
       ${ev.is_private ? '<span class="private-badge">🔒</span>' : ''}
     </div>`;
