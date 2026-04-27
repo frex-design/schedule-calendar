@@ -1320,10 +1320,11 @@ function openEventModal(dateStr, eventId) {
   const modal = document.getElementById('event-modal');
   const form = document.getElementById('event-form');
   form.reset();
+  document.getElementById('event-date-display').value = '';
 
   // 初期値を設定
   if (dateStr) {
-    document.getElementById('event-date').value = dateStr;
+    setDateValue('event-date', 'event-date-display', dateStr);
   }
 
   // 参加者リストを描画
@@ -1338,7 +1339,7 @@ function openEventModal(dateStr, eventId) {
     if (ev) {
       document.getElementById('modal-title-text').textContent = '予定を編集';
       document.getElementById('event-title').value = ev.title;
-      document.getElementById('event-date').value = toDateStr(new Date(ev.start_datetime));
+      setDateValue('event-date', 'event-date-display', toDateStr(new Date(ev.start_datetime)));
       tpSetValue('event-start-time', formatTime(ev.start_datetime));
       tpSetValue('event-end-time', formatTime(ev.end_datetime));
       document.getElementById('event-allday').checked = ev.is_all_day;
@@ -2340,6 +2341,131 @@ function downloadIcal() {
   showToast(`${events.length}件の予定をエクスポートしました`, 'success');
   closeModal('ical-modal');
 }
+
+// ============================================================
+// カスタム日付ピッカー
+// ============================================================
+
+let _dpHiddenId   = null;
+let _dpDisplayId  = null;
+let _dpYear       = new Date().getFullYear();
+let _dpMonth      = new Date().getMonth();
+
+const DP_MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DP_DOWS   = ['日','月','火','水','木','金','土'];
+
+/** 日付の値を hidden + display 両方にセット */
+function setDateValue(hiddenId, displayId, dateStr) {
+  document.getElementById(hiddenId).value = dateStr || '';
+  const disp = document.getElementById(displayId);
+  if (!disp) return;
+  if (dateStr) {
+    const d   = new Date(dateStr + 'T00:00:00');
+    const dow = DP_DOWS[d.getDay()];
+    disp.value = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${dow}）`;
+  } else {
+    disp.value = '';
+  }
+}
+
+/** ピッカーを開く / 同じ入力ならトグル */
+function toggleDatePicker(triggerEl, hiddenId) {
+  const popup  = document.getElementById('date-picker-popup');
+  const isOpen = !popup.classList.contains('hidden') && _dpHiddenId === hiddenId;
+  closeDatePicker();
+  if (isOpen) return;
+
+  _dpHiddenId  = hiddenId;
+  _dpDisplayId = triggerEl.id;
+
+  const val = document.getElementById(hiddenId).value;
+  if (val) {
+    const d = new Date(val + 'T00:00:00');
+    _dpYear  = d.getFullYear();
+    _dpMonth = d.getMonth();
+  } else {
+    const now = new Date();
+    _dpYear  = now.getFullYear();
+    _dpMonth = now.getMonth();
+  }
+
+  _renderDatePicker();
+
+  // fixed 位置を計算
+  const rect = triggerEl.getBoundingClientRect();
+  popup.style.top  = `${rect.bottom + 6}px`;
+  popup.style.left = `${rect.left}px`;
+  popup.classList.remove('hidden');
+
+  // 右端はみ出し補正
+  requestAnimationFrame(() => {
+    const pr = popup.getBoundingClientRect();
+    if (pr.right > window.innerWidth - 8) {
+      popup.style.left = `${window.innerWidth - pr.width - 8}px`;
+    }
+  });
+}
+
+function closeDatePicker() {
+  document.getElementById('date-picker-popup').classList.add('hidden');
+}
+
+function _renderDatePicker() {
+  const popup     = document.getElementById('date-picker-popup');
+  const selVal    = _dpHiddenId ? document.getElementById(_dpHiddenId).value : '';
+  const todayStr  = toDateStr(new Date());
+  const firstDow  = new Date(_dpYear, _dpMonth, 1).getDay();
+  const lastDate  = new Date(_dpYear, _dpMonth + 1, 0).getDate();
+
+  const dowHdr = DP_DOWS.map((l, i) =>
+    `<div class="dp-cell dp-dow${i === 0 ? ' dp-sun' : i === 6 ? ' dp-sat' : ''}">${l}</div>`
+  ).join('');
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="dp-cell dp-blank"></div>`;
+  for (let d = 1; d <= lastDate; d++) {
+    const ds  = `${_dpYear}-${String(_dpMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dow = (firstDow + d - 1) % 7;
+    let cls = 'dp-cell dp-day';
+    if (ds === selVal)    cls += ' dp-sel';
+    else if (ds === todayStr) cls += ' dp-today';
+    if (dow === 0) cls += ' dp-sun';
+    if (dow === 6) cls += ' dp-sat';
+    cells += `<div class="${cls}" onclick="dpPick('${ds}')">${d}</div>`;
+  }
+
+  popup.innerHTML = `
+    <div class="dp-header">
+      <button type="button" class="dp-nav-btn" onclick="dpNav(-1)"><i data-lucide="chevron-left"></i></button>
+      <span class="dp-title">${_dpYear}年 ${DP_MONTHS[_dpMonth]}</span>
+      <button type="button" class="dp-nav-btn" onclick="dpNav(1)"><i data-lucide="chevron-right"></i></button>
+    </div>
+    <div class="dp-grid">${dowHdr}${cells}</div>
+    <div class="dp-footer">
+      <button type="button" class="dp-today-btn" onclick="dpPick('${todayStr}')">今日</button>
+    </div>`;
+
+  lucide.createIcons({ context: popup });
+}
+
+function dpNav(delta) {
+  _dpMonth += delta;
+  if (_dpMonth < 0)  { _dpMonth = 11; _dpYear--; }
+  if (_dpMonth > 11) { _dpMonth = 0;  _dpYear++; }
+  _renderDatePicker();
+}
+
+function dpPick(dateStr) {
+  setDateValue(_dpHiddenId, _dpDisplayId, dateStr);
+  closeDatePicker();
+}
+
+// ポップアップ外クリックで閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dp-wrapper') && !e.target.closest('#date-picker-popup')) {
+    closeDatePicker();
+  }
+}, true);
 
 // ----------------------------------------
 // DOMContentLoaded 後に初期化

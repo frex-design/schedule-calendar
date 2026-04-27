@@ -371,8 +371,16 @@
 
           <!-- 日付 -->
           <div class="form-group">
-            <label class="form-label" for="event-date">日付 <span style="color:var(--error);">*</span></label>
-            <input class="form-input" type="date" id="event-date" required>
+            <label class="form-label">日付 <span style="color:var(--error);">*</span></label>
+            <div class="dp-wrapper">
+              <input class="form-input dp-display" id="event-date-display"
+                     placeholder="日付を選択..." readonly autocomplete="off"
+                     onclick="toggleDatePicker(this, 'event-date')">
+              <span class="dp-icon" onclick="toggleDatePicker(document.getElementById('event-date-display'), 'event-date')">
+                <i data-lucide="calendar"></i>
+              </span>
+              <input type="hidden" id="event-date">
+            </div>
           </div>
 
           <!-- 時刻 -->
@@ -695,6 +703,9 @@
        アプリケーションロジック
        ======================================== -->
   <script src="app.js"></script>
+
+  <!-- カスタム日付ピッカーポップアップ（fixed位置） -->
+  <div id="date-picker-popup" class="dp-popup hidden"></div>
 
 </body>
 </html>

@@ -1781,6 +1781,157 @@ ul, ol { list-style: none; }
 }
 .event-type-icon svg { width: 17px; height: 17px; }
 
+/* ============================================================
+   カスタム日付ピッカー
+   ============================================================ */
+
+.dp-wrapper {
+  position: relative;
+}
+
+.dp-display {
+  cursor: pointer;
+  padding-right: 32px;
+  caret-color: transparent;
+}
+
+.dp-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.dp-icon svg { width: 15px; height: 15px; }
+
+/* ポップアップ本体 */
+.dp-popup {
+  position: fixed;
+  z-index: 9999;
+  background: var(--bb-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+  padding: 14px;
+  width: 256px;
+  user-select: none;
+  animation: dpFadeIn 0.13s ease;
+}
+
+@keyframes dpFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ヘッダー（月ナビ） */
+.dp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dp-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.dp-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  transition: all var(--transition);
+}
+.dp-nav-btn:hover { background: var(--bb-beige); color: var(--text-primary); }
+.dp-nav-btn svg   { width: 15px; height: 15px; }
+
+/* 7列グリッド */
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dp-cell {
+  text-align: center;
+  font-size: 12px;
+  padding: 5px 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* 曜日ヘッダー */
+.dp-dow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-bottom: 5px;
+}
+.dp-dow.dp-sun { color: var(--bb-sun-txt); }
+.dp-dow.dp-sat { color: var(--bb-sat-txt); }
+
+/* 日付セル */
+.dp-day {
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background var(--transition), color var(--transition);
+  font-variant-numeric: tabular-nums;
+}
+.dp-day:hover:not(.dp-sel) { background: var(--bb-beige); }
+
+.dp-blank { cursor: default; }
+
+/* 土日色 */
+.dp-day.dp-sun { color: var(--bb-sun-txt); }
+.dp-day.dp-sat { color: var(--bb-sat-txt); }
+
+/* 今日 */
+.dp-today {
+  background: var(--bb-blue-lt);
+  color: var(--bb-blue) !important;
+  font-weight: 700;
+}
+
+/* 選択済み */
+.dp-sel {
+  background: var(--bb-blue) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+/* フッター（今日ボタン） */
+.dp-footer {
+  margin-top: 10px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.dp-today-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bb-blue);
+  background: var(--bb-blue-lt);
+  border: none;
+  cursor: pointer;
+  padding: 4px 16px;
+  border-radius: var(--radius-btn);
+  transition: all var(--transition);
+}
+.dp-today-btn:hover {
+  background: var(--bb-blue);
+  color: #fff;
+}
+
 /* ============ Lucide SVG アイコン共通サイズ ============ */
 .header-icon-btn svg   { width: 16px; height: 16px; display: block; }
 .modal-close svg       { width: 16px; height: 16px; display: block; }
