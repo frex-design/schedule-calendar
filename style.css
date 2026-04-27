@@ -1043,7 +1043,7 @@ ul, ol { list-style: none; }
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--bb-light);
+  color: var(--bb-dark);
 }
 
 .group-schedule-table th.today-col {
