@@ -123,12 +123,7 @@ ul, ol { list-style: none; }
   justify-content: center;
   z-index: 9999;
   opacity: 1;
-  transition: opacity 0.4s ease;
-}
-
-#loading-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
+  transition: opacity 0.45s ease;
 }
 
 /* 上部プログレスバー */

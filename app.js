@@ -1946,12 +1946,25 @@ async function switchView(view) {
  * ローディングオーバーレイを表示/非表示
  * 非表示時はフェードアウトしてから display:none（CSSトランジション連携）
  */
+let _loadingShowTime = 0;
+const _LOADING_MIN_MS = 1500; // 初回オープニングの最低表示時間
+
 function showLoading(show) {
   const el = document.getElementById('loading-overlay');
   if (show) {
-    el.classList.remove('hidden');
+    _loadingShowTime = Date.now();
+    el.style.display     = 'flex';
+    el.style.opacity     = '1';
+    el.style.pointerEvents = '';
   } else {
-    el.classList.add('hidden');
+    const elapsed = Date.now() - _loadingShowTime;
+    const delay   = Math.max(0, _LOADING_MIN_MS - elapsed);
+    setTimeout(() => {
+      el.style.opacity       = '0';
+      el.style.pointerEvents = 'none';
+      // フェードアウト完了後に非表示化
+      setTimeout(() => { el.style.display = 'none'; }, 450);
+    }, delay);
   }
 }
 
