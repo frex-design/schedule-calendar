@@ -1776,6 +1776,15 @@ ul, ol { list-style: none; }
 
 .event-type-icon { display: flex; align-items: center; justify-content: center; height: 20px; }
 
+/* 複数日カウント */
+.multiday-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bb-blue);
+  margin-top: 5px;
+  min-height: 16px;
+}
+
 /* 非公開バッジ */
 .private-badge {
   font-size: 11px;

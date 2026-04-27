@@ -384,6 +384,28 @@
             </div>
           </div>
 
+          <!-- 連日・複数日 -->
+          <div class="form-group" id="multiday-group">
+            <label class="checkbox-label" style="gap:6px;">
+              <input type="checkbox" id="event-multiday" onchange="onMultiDayChange(this.checked)">
+              <span>連日・複数日で登録</span>
+            </label>
+            <div id="multiday-end-wrap" class="hidden" style="margin-top:10px;">
+              <label class="form-label" style="margin-bottom:4px;">終了日</label>
+              <div class="dp-wrapper">
+                <input class="form-input dp-display" id="event-date-end-display"
+                       placeholder="終了日を選択..." readonly autocomplete="off"
+                       onclick="toggleDatePicker(this, 'event-date-end')">
+                <button type="button" class="dp-cal-btn"
+                        onclick="toggleDatePicker(document.getElementById('event-date-end-display'), 'event-date-end')">
+                  <i data-lucide="calendar-range"></i>
+                </button>
+                <input type="hidden" id="event-date-end">
+              </div>
+              <div id="multiday-count" class="multiday-count"></div>
+            </div>
+          </div>
+
           <!-- 時刻 -->
           <div class="form-group">
             <label class="form-label">時刻</label>

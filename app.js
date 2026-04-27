@@ -1324,6 +1324,16 @@ function openEventModal(dateStr, eventId) {
   const form = document.getElementById('event-form');
   form.reset();
   document.getElementById('event-date-display').value = '';
+  // 複数日UIをリセット
+  const multidayWrap = document.getElementById('multiday-end-wrap');
+  if (multidayWrap) multidayWrap.classList.add('hidden');
+  const multidayCount = document.getElementById('multiday-count');
+  if (multidayCount) multidayCount.textContent = '';
+  const endDisp = document.getElementById('event-date-end-display');
+  if (endDisp) endDisp.value = '';
+  // 編集モードでは連日UIを非表示
+  const multidayGroup = document.getElementById('multiday-group');
+  if (multidayGroup) multidayGroup.classList.toggle('hidden', !!eventId);
 
   // 初期値を設定
   if (dateStr) {
@@ -1732,33 +1742,56 @@ async function submitEventForm(e) {
     return;
   }
 
-  // 日時を JST として組み立て
+  const isPrivate  = document.getElementById('event-private').checked;
+  const isMultiDay = document.getElementById('event-multiday')?.checked && !editingEventId;
+  const endDateStr = isMultiDay ? document.getElementById('event-date-end')?.value : null;
+
+  // 複数日バリデーション
+  if (isMultiDay) {
+    if (!endDateStr) {
+      showToast('終了日を入力してください', 'error');
+      return;
+    }
+    if (endDateStr < dateStr) {
+      showToast('終了日は開始日以降にしてください', 'error');
+      return;
+    }
+  }
+
+  // 日時を JST として組み立て（1日分）
   let startDT, endDT;
   if (isAllDay) {
     startDT = `${dateStr}T00:00:00+09:00`;
     endDT   = `${dateStr}T23:59:59+09:00`;
   } else {
     startDT = `${dateStr}T${startTime || '09:00'}:00+09:00`;
-    endDT   = `${dateStr}T${endTime || '18:00'}:00+09:00`;
+    endDT   = `${dateStr}T${endTime   || '18:00'}:00+09:00`;
     if (endDT <= startDT) {
       showToast('終了時刻は開始時刻より後にしてください', 'error');
       return;
     }
   }
 
-  const isPrivate = document.getElementById('event-private').checked;
+  const baseData = { title, type, is_all_day: isAllDay, memo, facility, participants, is_private: isPrivate };
 
-  await saveEvent({
-    title,
-    type,
-    start_datetime: startDT,
-    end_datetime: endDT,
-    is_all_day: isAllDay,
-    memo,
-    facility,
-    participants,
-    is_private: isPrivate,
-  });
+  if (isMultiDay && endDateStr) {
+    // ── 複数日モード：開始〜終了の各日付ぶん dates 配列を生成 ──
+    const dates = [];
+    const cur   = new Date(dateStr   + 'T00:00:00');
+    const last  = new Date(endDateStr + 'T00:00:00');
+    while (cur <= last) {
+      const ds = toDateStr(cur);
+      dates.push({
+        start: isAllDay ? `${ds}T00:00:00+09:00` : `${ds}T${startTime || '09:00'}:00+09:00`,
+        end:   isAllDay ? `${ds}T23:59:59+09:00` : `${ds}T${endTime   || '18:00'}:00+09:00`,
+      });
+      cur.setDate(cur.getDate() + 1);
+    }
+    await saveEvent({ ...baseData, dates });
+  } else {
+    // ── 単日モード ──
+    await saveEvent({ ...baseData, start_datetime: startDT, end_datetime: endDT });
+  }
 
   closeModal('event-modal');
 }
@@ -2382,6 +2415,52 @@ function setDateValue(hiddenId, displayId, dateStr) {
   } else {
     disp.value = '';
   }
+  // 複数日モードの日数カウントを更新
+  if (hiddenId === 'event-date' || hiddenId === 'event-date-end') {
+    updateMultiDayCount();
+  }
+}
+
+// ============================================================
+// 連日・複数日登録
+// ============================================================
+
+function onMultiDayChange(checked) {
+  const wrap = document.getElementById('multiday-end-wrap');
+  if (wrap) wrap.classList.toggle('hidden', !checked);
+  if (!checked) {
+    setDateValue('event-date-end', 'event-date-end-display', '');
+  }
+  updateMultiDayCount();
+  // 連日モードは終日ON推奨
+  if (checked) {
+    document.getElementById('event-allday').checked = true;
+  }
+  // lucide アイコン再描画
+  const btn = document.querySelector('#multiday-end-wrap .dp-cal-btn');
+  if (btn) lucide.createIcons({ context: btn.parentElement });
+}
+
+function updateMultiDayCount() {
+  const countEl = document.getElementById('multiday-count');
+  if (!countEl) return;
+  const isMultiDay = document.getElementById('event-multiday')?.checked;
+  if (!isMultiDay) { countEl.textContent = ''; return; }
+
+  const startVal = document.getElementById('event-date')?.value;
+  const endVal   = document.getElementById('event-date-end')?.value;
+  if (!startVal || !endVal) { countEl.textContent = ''; return; }
+
+  const start = new Date(startVal + 'T00:00:00');
+  const end   = new Date(endVal   + 'T00:00:00');
+  if (end < start) {
+    countEl.textContent = '⚠ 終了日は開始日以降にしてください';
+    countEl.style.color = 'var(--error)';
+    return;
+  }
+  const days = Math.round((end - start) / 86400000) + 1;
+  countEl.textContent = `${days}日間`;
+  countEl.style.color = 'var(--bb-blue)';
 }
 
 /** ピッカーを開く / 同じ入力ならトグル */
