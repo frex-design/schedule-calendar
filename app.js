@@ -2391,18 +2391,27 @@ function toggleDatePicker(triggerEl, hiddenId) {
 
   _renderDatePicker();
 
-  // fixed 位置を計算
+  // fixed 位置を計算（一旦非表示で描画してサイズ取得）
   const rect = triggerEl.getBoundingClientRect();
+  popup.style.visibility = 'hidden';
   popup.style.top  = `${rect.bottom + 6}px`;
   popup.style.left = `${rect.left}px`;
   popup.classList.remove('hidden');
 
-  // 右端はみ出し補正
   requestAnimationFrame(() => {
     const pr = popup.getBoundingClientRect();
+
+    // 右端はみ出し補正
     if (pr.right > window.innerWidth - 8) {
       popup.style.left = `${window.innerWidth - pr.width - 8}px`;
     }
+
+    // 下端はみ出し → トリガーの上に反転表示
+    if (pr.bottom > window.innerHeight - 8) {
+      popup.style.top = `${rect.top - pr.height - 6}px`;
+    }
+
+    popup.style.visibility = '';
   });
 }
 
