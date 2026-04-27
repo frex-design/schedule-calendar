@@ -1786,26 +1786,43 @@ ul, ol { list-style: none; }
    ============================================================ */
 
 .dp-wrapper {
-  position: relative;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.dp-wrapper:focus-within {
+  border-color: var(--bb-blue);
+  box-shadow: 0 0 0 2px rgba(0,169,224,0.12);
 }
 
 .dp-display {
+  flex: 1;
   cursor: pointer;
-  padding-right: 32px;
   caret-color: transparent;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
 }
+.dp-display:focus { box-shadow: none !important; }
 
-.dp-icon {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+.dp-cal-btn {
+  background: var(--bb-beige);
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 0 10px;
+  cursor: pointer;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
 }
-.dp-icon svg { width: 15px; height: 15px; }
+.dp-cal-btn:hover { background: var(--bb-light); color: var(--text-primary); }
+.dp-cal-btn svg   { width: 15px; height: 15px; display: block; }
 
 /* ポップアップ本体 */
 .dp-popup {

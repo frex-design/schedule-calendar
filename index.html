@@ -376,9 +376,10 @@
               <input class="form-input dp-display" id="event-date-display"
                      placeholder="日付を選択..." readonly autocomplete="off"
                      onclick="toggleDatePicker(this, 'event-date')">
-              <span class="dp-icon" onclick="toggleDatePicker(document.getElementById('event-date-display'), 'event-date')">
+              <button type="button" class="dp-cal-btn"
+                      onclick="toggleDatePicker(document.getElementById('event-date-display'), 'event-date')">
                 <i data-lucide="calendar"></i>
-              </span>
+              </button>
               <input type="hidden" id="event-date">
             </div>
           </div>
