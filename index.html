@@ -304,6 +304,14 @@
       <form id="event-form">
         <div class="modal-body">
 
+          <!-- 非公開 -->
+          <div class="form-group">
+            <label class="checkbox-label" style="gap:6px;">
+              <input type="checkbox" id="event-private">
+              <span>🔒 非公開（自分のみに表示）</span>
+            </label>
+          </div>
+
           <!-- 予定タイプ選択 -->
           <div class="form-group">
             <label class="form-label">予定タイプ</label>
@@ -404,14 +412,6 @@
             <div class="participant-list" id="participant-list">
               <!-- JavaScript で描画 -->
             </div>
-          </div>
-
-          <!-- 非公開 -->
-          <div class="form-group">
-            <label class="checkbox-label" style="gap:6px;">
-              <input type="checkbox" id="event-private">
-              <span>🔒 非公開（自分のみに表示）</span>
-            </label>
           </div>
 
         </div><!-- /modal-body -->
