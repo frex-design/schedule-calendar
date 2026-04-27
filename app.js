@@ -2503,7 +2503,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alldayCheckbox.checked = false;
       } else if (type === 'holiday') {
         titleInput.value = '有給休暇';
-        titleInput.readOnly = true;
+        titleInput.readOnly = false;
         alldayCheckbox.checked = true;
       } else {
         // 他のタイプに切り替えたらreadOnlyを解除（テレワーク系の自動入力だった場合はクリア）
