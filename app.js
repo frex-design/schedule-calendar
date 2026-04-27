@@ -2397,23 +2397,46 @@ function toggleDatePicker(triggerEl, hiddenId) {
   // fixed 位置を計算（一旦非表示で描画してサイズ取得）
   const rect = triggerEl.getBoundingClientRect();
   popup.style.visibility = 'hidden';
-  popup.style.top  = `${rect.bottom + 6}px`;
-  popup.style.left = `${rect.left}px`;
+  popup.style.top  = '-9999px';
+  popup.style.left = '-9999px';
   popup.classList.remove('hidden');
 
   requestAnimationFrame(() => {
-    const pr = popup.getBoundingClientRect();
+    const ph = popup.offsetHeight;
+    const pw = popup.offsetWidth;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 8;
 
-    // 右端はみ出し補正
-    if (pr.right > window.innerWidth - 8) {
-      popup.style.left = `${window.innerWidth - pr.width - 8}px`;
+    // ── 上下の空きスペースを比較して配置方向を決める ──
+    const spaceBelow = vh - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+
+    let top;
+    if (ph <= spaceBelow) {
+      // 下に十分スペースあり → 下に出す
+      top = rect.bottom + 6;
+    } else if (ph <= spaceAbove) {
+      // 上に十分スペースあり → 上に出す
+      top = rect.top - ph - 6;
+    } else {
+      // どちらも足りない → スペースが広い方向にはみ出さないようにクランプ
+      if (spaceAbove > spaceBelow) {
+        top = Math.max(margin, rect.top - ph - 6);
+      } else {
+        top = Math.min(rect.bottom + 6, vh - ph - margin);
+      }
     }
 
-    // 下端はみ出し → トリガーの上に反転表示
-    if (pr.bottom > window.innerHeight - 8) {
-      popup.style.top = `${rect.top - pr.height - 6}px`;
+    // ── 左右：右端からはみ出さないよう調整 ──
+    let left = rect.left;
+    if (left + pw > vw - margin) {
+      left = vw - pw - margin;
     }
+    left = Math.max(margin, left);
 
+    popup.style.top  = `${top}px`;
+    popup.style.left = `${left}px`;
     popup.style.visibility = '';
   });
 }
