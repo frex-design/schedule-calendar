@@ -217,6 +217,122 @@ function autoFillEndTime() {
   tpSetValue('event-end-time', `${String(endH).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
 }
 
+// ============================================================
+// 天気ウィジェット（気象庁API）
+// ============================================================
+
+/**
+ * 気象庁APIから秋田の天気を取得してサイドバーに表示
+ * 秋田県コード: 050000
+ */
+async function loadWeather() {
+  const container = document.getElementById('weather-content');
+  if (!container) return;
+
+  // 天気コード → 絵文字マッピング
+  function codeToEmoji(code) {
+    const n = parseInt(code, 10);
+    if (!n) return '🌡️';
+    if (n >= 400 && n < 500) return '❄️'; // 雪
+    if (n >= 300 && n < 400) return '🌧️'; // 雨
+    if (n >= 250 && n < 300) return '🌨️'; // みぞれ/雪
+    if (n >= 200 && n < 250) return '☁️'; // 曇り
+    if (n === 130 || n === 131 || n === 132) return '⛅'; // 晴れ時々曇り
+    if (n >= 100 && n < 200) {
+      if (n === 101 || n === 111 || n === 114) return '🌤️'; // 晴れ時々
+      return '☀️'; // 晴れ
+    }
+    return '🌡️';
+  }
+
+  // 天気説明を短縮
+  function shortWeather(text) {
+    if (!text) return '不明';
+    return text
+      .replace(/　/g, ' ')
+      .replace(/後/g, 'のち')
+      .replace(/時々/g, '時々')
+      .replace(/所により/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 12);
+  }
+
+  try {
+    const res = await fetch('https://www.jma.go.jp/bosai/forecast/data/forecast/050000.json');
+    if (!res.ok) throw new Error('fetch error');
+    const data = await res.json();
+
+    // 短期予報（最初のオブジェクト）
+    const ts = data[0].timeSeries;
+    const weatherSeries = ts[0]; // 天気コード・説明
+    const tempSeries    = ts[2]; // 気温（最高/最低）
+
+    // 秋田の気象台エリアを探す（area.code = '050010' or 'name = 秋田'）
+    const wxArea = weatherSeries.areas.find(a =>
+      a.area.code === '050010' || a.area.name === '秋田'
+    ) || weatherSeries.areas[0];
+
+    // 気温エリア（code = '0113' or '0116' の最初のエリア）
+    const tmpArea = tempSeries ? tempSeries.areas[0] : null;
+
+    // 今日・明日・明後日のインデックス
+    const days = [
+      { label: '今日', idx: 0 },
+      { label: '明日', idx: 1 },
+    ];
+
+    // 気温配列: [今日最低, 今日最高, 明日最低, 明日最高] or [最低, 最高, ...]
+    // JMA API の temps は timeDefines に対応（NULL含む）
+    let tempsMap = {};
+    if (tmpArea && tempSeries) {
+      const times = tempSeries.timeDefines;
+      const temps = tmpArea.temps;
+      times.forEach((t, i) => {
+        const d = new Date(t);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (!tempsMap[key]) tempsMap[key] = {};
+        const hour = d.getHours();
+        if (hour < 12) tempsMap[key].min = temps[i]; // 早朝 = 最低
+        else           tempsMap[key].max = temps[i]; // 昼  = 最高
+      });
+    }
+
+    const today = new Date();
+    const html = days.map(({ label, idx }) => {
+      const code  = wxArea.weatherCodes ? wxArea.weatherCodes[idx] : '';
+      const text  = wxArea.weathers     ? wxArea.weathers[idx]     : '';
+      const emoji = codeToEmoji(code);
+      const desc  = shortWeather(text);
+
+      const dt = new Date(today);
+      dt.setDate(today.getDate() + idx);
+      const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+      const t = tempsMap[key] || {};
+
+      const tempHtml = (t.max || t.min)
+        ? `<span class="weather-temp-max">${t.max ?? '-'}°</span> / <span class="weather-temp-min">${t.min ?? '-'}°</span>`
+        : '';
+
+      return `
+        <div class="weather-day">
+          <span class="weather-day-label">${label}</span>
+          <span class="weather-icon">${emoji}</span>
+          <div class="weather-info">
+            <div class="weather-desc">${desc}</div>
+            ${tempHtml ? `<div class="weather-temp">${tempHtml}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = html;
+
+  } catch (e) {
+    container.innerHTML = '<div class="weather-error">天気を取得できませんでした</div>';
+    console.warn('天気取得エラー:', e);
+  }
+}
+
 /**
  * アプリ起動処理
  */
@@ -272,10 +388,11 @@ async function onSignedIn() {
     renderCurrentView();
     showLoading(false);
 
-    // 施設・TODOはバックグラウンドで取得（初期表示に不要）
+    // 施設・TODO・天気はバックグラウンドで取得（初期表示に不要）
     Promise.all([
       fetchFacilities(),
       fetchTodos(),
+      loadWeather(),
     ]).catch(err => console.error('バックグラウンドデータ取得エラー:', err));
 
     // リアルタイム購読を開始
