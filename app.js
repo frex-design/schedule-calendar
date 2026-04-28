@@ -148,6 +148,7 @@ let miniCalDate = new Date();     // ミニカレンダーの月
 let realtimeChannel = null;       // リアルタイム購読チャンネル
 let isAppReady = false;           // 初期化完了フラグ（二重起動防止）
 let editingEventId = null;        // 編集中イベントID（nullで新規）
+const eventCache = new Map();     // イベントキャッシュ: 'start_end' → events[]
 
 // ----------------------------------------
 // 初期化
@@ -692,9 +693,17 @@ async function fetchFacilities() {
 /**
  * 指定期間のイベントを取得
  */
-async function fetchEvents(startDate, endDate) {
+async function fetchEvents(startDate, endDate, forceRefresh = false) {
   const start = toISO(startOf(startDate));
-  const end = toISO(endOf(endDate));
+  const end   = toISO(endOf(endDate));
+  const cacheKey = `${start}_${end}`;
+
+  // キャッシュヒット（強制更新なし）
+  if (!forceRefresh && eventCache.has(cacheKey)) {
+    allEvents = eventCache.get(cacheKey);
+    return;
+  }
+
   const { data, error } = await supabaseClient
     .from('events')
     .select(`*, profiles!events_user_id_fkey(id, name, avatar_color, department),
@@ -704,6 +713,12 @@ async function fetchEvents(startDate, endDate) {
     .order('start_datetime');
   if (error) throw error;
   allEvents = data || [];
+  eventCache.set(cacheKey, allEvents);
+}
+
+/** イベントキャッシュを全クリア（保存・削除・リアルタイム更新時に呼ぶ） */
+function clearEventCache() {
+  eventCache.clear();
 }
 
 /**
@@ -755,6 +770,7 @@ async function saveEvent(eventData) {
       // 複数日の場合、参加者は最初のイベントのみ
       if (data.length > 1) {
         showToast(`${data.length}件の予定を登録しました`, 'success');
+        clearEventCache();
         await refreshCurrentView();
         return;
       }
@@ -771,6 +787,7 @@ async function saveEvent(eventData) {
     }
 
     showToast(editingEventId ? '予定を更新しました' : '予定を登録しました', 'success');
+    clearEventCache(); // 保存後はキャッシュを破棄
     // 全件再取得の代わりに保存した1件だけ取得してローカル更新
     const { data: savedEvent } = await supabaseClient
       .from('events')
@@ -811,6 +828,7 @@ async function deleteEvent(eventId) {
     if (error) throw error;
     showToast('予定を削除しました', 'success');
     closeModal('event-detail-modal');
+    clearEventCache(); // 削除後はキャッシュを破棄
     await refreshCurrentView();
   } catch (err) {
     showToast('削除に失敗しました: ' + err.message, 'error');
@@ -978,6 +996,7 @@ function subscribeRealtime() {
     .channel('schedule-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, async (payload) => {
       console.log('リアルタイム更新:', payload);
+      clearEventCache(); // 他端末の変更はキャッシュを破棄して再取得
       await refreshCurrentView();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
@@ -993,28 +1012,61 @@ function subscribeRealtime() {
 
 /**
  * 現在のビューを再描画
+ * キャッシュがあれば即座に描画し、バックグラウンドで最新データを取得する。
+ * キャッシュがない場合のみ待機してから描画する。
  */
 async function refreshCurrentView() {
   const [start, end] = getDateRange();
-  await fetchEvents(start, end);
-  renderCurrentView();
+  const startISO = toISO(startOf(start));
+  const endISO   = toISO(endOf(end));
+  const cacheKey = `${startISO}_${endISO}`;
+
+  if (eventCache.has(cacheKey)) {
+    // キャッシュヒット → 即座に描画
+    allEvents = eventCache.get(cacheKey);
+    renderCurrentView();
+    // バックグラウンドで静かに最新化（エラーは無視）
+    fetchEvents(start, end, true)
+      .then(() => renderCurrentView())
+      .catch(() => {});
+  } else {
+    // キャッシュなし → 取得してから描画
+    await fetchEvents(start, end);
+    renderCurrentView();
+  }
+
+  // 前後のビューをバックグラウンドでプリフェッチ
+  prefetchAdjacentViews();
+}
+
+/**
+ * 前後のビューをバックグラウンドでプリフェッチ（ナビボタンを素早く感じさせる）
+ */
+function prefetchAdjacentViews() {
+  const prevDate = shiftDate(currentDate, -1);
+  const nextDate = shiftDate(currentDate,  1);
+  const [ps, pe] = getDateRange(prevDate);
+  const [ns, ne] = getDateRange(nextDate);
+  fetchEvents(ps, pe).catch(() => {});
+  fetchEvents(ns, ne).catch(() => {});
 }
 
 /**
  * 現在のビューに応じた日付範囲を取得
+ * @param {Date} [date=currentDate] 基準日（省略時は currentDate）
  */
-function getDateRange() {
+function getDateRange(date = currentDate) {
   switch (currentView) {
     case 'group-week':
     case 'personal-week':
-      return getWeekRange(currentDate);
+      return getWeekRange(date);
     case 'group-day':
     case 'personal-day':
-      return [currentDate, currentDate];
+      return [date, date];
     case 'personal-month':
-      return getMonthRange(currentDate);
+      return getMonthRange(date);
     default:
-      return getWeekRange(currentDate);
+      return getWeekRange(date);
   }
 }
 
