@@ -344,7 +344,8 @@ function renderWeatherWidget(loc1Days, loc1Name, loc2Days, loc2Name) {
   container.innerHTML =
     renderLoc(loc1Days, loc1Name) +
     '<div class="wx6-divider"></div>' +
-    renderLoc(loc2Days, loc2Name);
+    renderLoc(loc2Days, loc2Name) +
+    '<div class="wx6-source">出典：気象庁予報データ</div>';
 }
 
 /** 天気データを取得してウィジェットを更新 */

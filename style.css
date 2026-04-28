@@ -930,6 +930,14 @@ ul, ol { list-style: none; }
 .wx6-th { color: #d97706; font-weight: 700; }
 .wx6-tl { color: #3b82f6; }
 
+.wx6-source {
+  font-size: 9px;
+  color: var(--bb-light);
+  text-align: right;
+  margin-top: 6px;
+  letter-spacing: 0.2px;
+}
+
 .weather-error {
   font-size: 11px;
   color: var(--bb-mid);
