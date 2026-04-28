@@ -932,7 +932,7 @@ ul, ol { list-style: none; }
 
 .wx6-source {
   font-size: 9px;
-  color: var(--bb-light);
+  color: var(--bb-mid);
   text-align: right;
   margin-top: 6px;
   letter-spacing: 0.2px;
