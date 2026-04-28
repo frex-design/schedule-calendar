@@ -284,24 +284,24 @@ function shortWeatherText(text) {
 
 /** 気象庁APIデータから都市の今日〜明後日のデータを抽出 */
 function extractCityWeather(apiData, city) {
-  const ts = apiData[0].timeSeries;
-  const weatherSeries = ts[0];
-  // エリア名にキーワードが含まれるものを探す、なければ先頭
-  const wxArea = weatherSeries.areas.find(a =>
+  // ── 天気説明：短期予報（data[0]）から取得 ──
+  const wxArea = (apiData[0].timeSeries[0].areas.find(a =>
     a.area.name.includes(city.areaKeyword)
-  ) || weatherSeries.areas[0];
+  ) || apiData[0].timeSeries[0].areas[0]);
 
-  // 気温マップ（日付 → { max, min }）
-  const tempSeries = ts[2];
-  const tmpArea    = tempSeries ? tempSeries.areas[0] : null;
-  const tempsMap   = {};
-  if (tmpArea && tempSeries) {
-    tempSeries.timeDefines.forEach((t, i) => {
+  // ── 気温：週間予報（data[1]）の tempsMin / tempsMax を使う ──
+  // 短期予報の temps は今日1日分しかないため、週間予報で3日分を取得する
+  const weeklyTempSeries = apiData[1]?.timeSeries?.[1];
+  const weeklyTmpArea    = weeklyTempSeries?.areas?.[0];
+  const tempsMap = {};
+  if (weeklyTmpArea && weeklyTempSeries) {
+    weeklyTempSeries.timeDefines.forEach((t, i) => {
       const d   = new Date(t);
       const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      if (!tempsMap[key]) tempsMap[key] = {};
-      if (d.getHours() === 0) tempsMap[key].min = tmpArea.temps[i]; // 深夜0時 = 最低気温
-      else                    tempsMap[key].max = tmpArea.temps[i]; // 9時等  = 最高気温
+      tempsMap[key] = {
+        min: weeklyTmpArea.tempsMin?.[i] || null,
+        max: weeklyTmpArea.tempsMax?.[i] || null,
+      };
     });
   }
 
@@ -314,8 +314,8 @@ function extractCityWeather(apiData, city) {
     return {
       emoji: weatherCodeToEmoji(wxArea.weatherCodes?.[offset] || ''),
       desc:  shortWeatherText(wxArea.weathers?.[offset] || ''),
-      max:   t.max ?? null,
-      min:   t.min ?? null,
+      max:   t.max || null,
+      min:   t.min || null,
     };
   });
 }
