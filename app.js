@@ -11,14 +11,14 @@
 
 /** 予定タイプ定義（サイボウズ準拠の色分け） */
 const EVENT_TYPES = {
-  'telework':      { label: 'テレワーク',  color: '#4CAF50', bg: '#E8F5E9', icon: '🏠', lucideIcon: 'home'      },
-  'tele-half':     { label: 'テレハーフ',  color: '#2196F3', bg: '#E3F2FD', icon: '💻', lucideIcon: 'laptop'    },
-  'meeting':       { label: '会議',        color: '#1565C0', bg: '#BBDEFB', icon: '👥', lucideIcon: 'users'     },
-  'visitor':       { label: '来客',        color: '#0277BD', bg: '#E1F5FE', icon: '🤝', lucideIcon: 'user-plus' },
-  'out':           { label: '外出',        color: '#FF9800', bg: '#FFF3E0', icon: '🚗', lucideIcon: 'car'       },
-  'business-trip': { label: '出張',        color: '#9C27B0', bg: '#F3E5F5', icon: '✈️', lucideIcon: 'plane'     },
-  'holiday':       { label: '休み',        color: '#F44336', bg: '#FFEBEE', icon: '🌴', lucideIcon: 'umbrella'  },
-  'other':         { label: 'その他',      color: '#607D8B', bg: '#ECEFF1', icon: '📝', lucideIcon: 'bookmark'  },
+  'telework':      { label: 'テレワーク',  color: '#2E7D32', bg: '#E8F5E9', icon: '🏠', lucideIcon: 'home'      },
+  'tele-half':     { label: 'テレハーフ',  color: '#1565C0', bg: '#E3F2FD', icon: '💻', lucideIcon: 'laptop'    },
+  'meeting':       { label: '会議',        color: '#0D47A1', bg: '#BBDEFB', icon: '👥', lucideIcon: 'users'     },
+  'visitor':       { label: '来客',        color: '#01579B', bg: '#E1F5FE', icon: '🤝', lucideIcon: 'user-plus' },
+  'out':           { label: '外出',        color: '#E65100', bg: '#FFF3E0', icon: '🚗', lucideIcon: 'car'       },
+  'business-trip': { label: '出張',        color: '#6A1B9A', bg: '#F3E5F5', icon: '✈️', lucideIcon: 'plane'     },
+  'holiday':       { label: '休み',        color: '#B71C1C', bg: '#FFEBEE', icon: '🌴', lucideIcon: 'umbrella'  },
+  'other':         { label: 'その他',      color: '#263238', bg: '#ECEFF1', icon: '📝', lucideIcon: 'bookmark'  },
 };
 
 /** 優先度ラベル */
