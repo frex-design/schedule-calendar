@@ -300,8 +300,8 @@ function extractCityWeather(apiData, city) {
       const d   = new Date(t);
       const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       if (!tempsMap[key]) tempsMap[key] = {};
-      if (d.getHours() < 12) tempsMap[key].min = tmpArea.temps[i];
-      else                   tempsMap[key].max = tmpArea.temps[i];
+      if (d.getHours() === 0) tempsMap[key].min = tmpArea.temps[i]; // 深夜0時 = 最低気温
+      else                    tempsMap[key].max = tmpArea.temps[i]; // 9時等  = 最高気温
     });
   }
 
