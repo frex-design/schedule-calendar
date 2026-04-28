@@ -218,119 +218,218 @@ function autoFillEndTime() {
 }
 
 // ============================================================
-// 天気ウィジェット（気象庁API）
+// 天気ウィジェット（気象庁API）2地点設定対応
 // ============================================================
 
-/**
- * 気象庁APIから秋田の天気を取得してサイドバーに表示
- * 秋田県コード: 050000
- */
+/** 東北主要都市リスト（気象庁エリアキーワード付き） */
+const WEATHER_CITIES = [
+  // 秋田県
+  { name: '秋田市',      pref: '050000', areaKeyword: '秋田'   },
+  { name: '能代市',      pref: '050000', areaKeyword: '秋田'   },
+  { name: '由利本荘市',  pref: '050000', areaKeyword: '沿岸'   },
+  { name: 'にかほ市',    pref: '050000', areaKeyword: '沿岸'   },
+  { name: '横手市',      pref: '050000', areaKeyword: '内陸'   },
+  { name: '大仙市',      pref: '050000', areaKeyword: '内陸'   },
+  { name: '大館市',      pref: '050000', areaKeyword: '内陸'   },
+  { name: '湯沢市',      pref: '050000', areaKeyword: '内陸'   },
+  // 宮城県
+  { name: '仙台市',      pref: '040000', areaKeyword: '東部'   },
+  { name: '石巻市',      pref: '040000', areaKeyword: '東部'   },
+  { name: '気仙沼市',    pref: '040000', areaKeyword: '東部'   },
+  { name: '大崎市',      pref: '040000', areaKeyword: '西部'   },
+  // 岩手県
+  { name: '盛岡市',      pref: '030000', areaKeyword: '内陸'   },
+  { name: '花巻市',      pref: '030000', areaKeyword: '内陸'   },
+  { name: '一関市',      pref: '030000', areaKeyword: '内陸'   },
+  { name: '奥州市',      pref: '030000', areaKeyword: '内陸'   },
+  { name: '宮古市',      pref: '030000', areaKeyword: '沿岸'   },
+  // 青森県
+  { name: '青森市',      pref: '020000', areaKeyword: '津軽'   },
+  { name: '弘前市',      pref: '020000', areaKeyword: '津軽'   },
+  { name: '八戸市',      pref: '020000', areaKeyword: '三八'   },
+  { name: 'むつ市',      pref: '020000', areaKeyword: '下北'   },
+  // 山形県
+  { name: '山形市',      pref: '060000', areaKeyword: '村山'   },
+  { name: '新庄市',      pref: '060000', areaKeyword: '最上'   },
+  { name: '米沢市',      pref: '060000', areaKeyword: '置賜'   },
+  { name: '鶴岡市',      pref: '060000', areaKeyword: '庄内'   },
+  { name: '酒田市',      pref: '060000', areaKeyword: '庄内'   },
+  // 福島県
+  { name: '福島市',      pref: '070000', areaKeyword: '中通り' },
+  { name: '郡山市',      pref: '070000', areaKeyword: '中通り' },
+  { name: 'いわき市',    pref: '070000', areaKeyword: '浜通り' },
+  { name: '会津若松市',  pref: '070000', areaKeyword: '会津'   },
+];
+
+/** 気象庁天気コード → 絵文字 */
+function weatherCodeToEmoji(code) {
+  const n = parseInt(code, 10);
+  if (!n) return '🌡️';
+  if (n >= 400) return '❄️';
+  if (n >= 300) return '🌧️';
+  if (n >= 250) return '🌨️';
+  if (n >= 200) return '☁️';
+  if (n === 101 || n === 111 || n === 114 || n === 115) return '🌤️';
+  if (n === 130 || n === 131 || n === 132) return '⛅';
+  if (n >= 100) return '☀️';
+  return '🌡️';
+}
+
+/** 天気説明を短く（最大8文字） */
+function shortWeatherText(text) {
+  if (!text) return '−';
+  return text.replace(/\s+|　/g, '').replace(/所により/g, '').trim().slice(0, 8);
+}
+
+/** 気象庁APIデータから都市の今日〜明後日のデータを抽出 */
+function extractCityWeather(apiData, city) {
+  const ts = apiData[0].timeSeries;
+  const weatherSeries = ts[0];
+  // エリア名にキーワードが含まれるものを探す、なければ先頭
+  const wxArea = weatherSeries.areas.find(a =>
+    a.area.name.includes(city.areaKeyword)
+  ) || weatherSeries.areas[0];
+
+  // 気温マップ（日付 → { max, min }）
+  const tempSeries = ts[2];
+  const tmpArea    = tempSeries ? tempSeries.areas[0] : null;
+  const tempsMap   = {};
+  if (tmpArea && tempSeries) {
+    tempSeries.timeDefines.forEach((t, i) => {
+      const d   = new Date(t);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!tempsMap[key]) tempsMap[key] = {};
+      if (d.getHours() < 12) tempsMap[key].min = tmpArea.temps[i];
+      else                   tempsMap[key].max = tmpArea.temps[i];
+    });
+  }
+
+  const today = new Date();
+  return [0, 1, 2].map(offset => {
+    const dt  = new Date(today);
+    dt.setDate(today.getDate() + offset);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    const t   = tempsMap[key] || {};
+    return {
+      emoji: weatherCodeToEmoji(wxArea.weatherCodes?.[offset] || ''),
+      desc:  shortWeatherText(wxArea.weathers?.[offset] || ''),
+      max:   t.max ?? null,
+      min:   t.min ?? null,
+    };
+  });
+}
+
+/** パターン⑥ レンダリング（2地点×3日） */
+function renderWeatherWidget(loc1Days, loc1Name, loc2Days, loc2Name) {
+  const container = document.getElementById('weather-content');
+  if (!container) return;
+  const LABELS = ['今日', '明日', '明後'];
+  const renderLoc = (days, name) => `
+    <div class="wx6-loc">
+      <div class="wx6-loc-name"><span class="wx6-pin">📍</span>${escHtml(name)}</div>
+      <div class="wx6-days">
+        ${days.map((d, i) => `
+          <div class="wx6-day${i === 0 ? ' wx6-today' : ''}">
+            <span class="wx6-label">${LABELS[i]}</span>
+            <span class="wx6-icon">${d.emoji}</span>
+            <span class="wx6-desc">${escHtml(d.desc)}</span>
+            <div class="wx6-temps">
+              <span class="wx6-th">${d.max !== null ? d.max + '°' : '−'}</span>
+              <span class="wx6-tl">${d.min !== null ? d.min + '°' : '−'}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  container.innerHTML =
+    renderLoc(loc1Days, loc1Name) +
+    '<div class="wx6-divider"></div>' +
+    renderLoc(loc2Days, loc2Name);
+}
+
+/** 天気データを取得してウィジェットを更新 */
 async function loadWeather() {
   const container = document.getElementById('weather-content');
   if (!container) return;
 
-  // 天気コード → 絵文字マッピング
-  function codeToEmoji(code) {
-    const n = parseInt(code, 10);
-    if (!n) return '🌡️';
-    if (n >= 400 && n < 500) return '❄️'; // 雪
-    if (n >= 300 && n < 400) return '🌧️'; // 雨
-    if (n >= 250 && n < 300) return '🌨️'; // みぞれ/雪
-    if (n >= 200 && n < 250) return '☁️'; // 曇り
-    if (n === 130 || n === 131 || n === 132) return '⛅'; // 晴れ時々曇り
-    if (n >= 100 && n < 200) {
-      if (n === 101 || n === 111 || n === 114) return '🌤️'; // 晴れ時々
-      return '☀️'; // 晴れ
-    }
-    return '🌡️';
-  }
-
-  // 天気説明を短縮
-  function shortWeather(text) {
-    if (!text) return '不明';
-    return text
-      .replace(/　/g, ' ')
-      .replace(/後/g, 'のち')
-      .replace(/時々/g, '時々')
-      .replace(/所により/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 12);
-  }
+  const loc1Name = localStorage.getItem('wx_loc1') || '秋田市';
+  const loc2Name = localStorage.getItem('wx_loc2') || '横手市';
+  const city1 = WEATHER_CITIES.find(c => c.name === loc1Name) || WEATHER_CITIES[0];
+  const city2 = WEATHER_CITIES.find(c => c.name === loc2Name) || WEATHER_CITIES[4];
 
   try {
-    const res = await fetch('https://www.jma.go.jp/bosai/forecast/data/forecast/050000.json');
-    if (!res.ok) throw new Error('fetch error');
-    const data = await res.json();
-
-    // 短期予報（最初のオブジェクト）
-    const ts = data[0].timeSeries;
-    const weatherSeries = ts[0]; // 天気コード・説明
-    const tempSeries    = ts[2]; // 気温（最高/最低）
-
-    // 秋田の気象台エリアを探す（area.code = '050010' or 'name = 秋田'）
-    const wxArea = weatherSeries.areas.find(a =>
-      a.area.code === '050010' || a.area.name === '秋田'
-    ) || weatherSeries.areas[0];
-
-    // 気温エリア（code = '0113' or '0116' の最初のエリア）
-    const tmpArea = tempSeries ? tempSeries.areas[0] : null;
-
-    // 今日・明日・明後日のインデックス
-    const days = [
-      { label: '今日', idx: 0 },
-      { label: '明日', idx: 1 },
-    ];
-
-    // 気温配列: [今日最低, 今日最高, 明日最低, 明日最高] or [最低, 最高, ...]
-    // JMA API の temps は timeDefines に対応（NULL含む）
-    let tempsMap = {};
-    if (tmpArea && tempSeries) {
-      const times = tempSeries.timeDefines;
-      const temps = tmpArea.temps;
-      times.forEach((t, i) => {
-        const d = new Date(t);
-        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        if (!tempsMap[key]) tempsMap[key] = {};
-        const hour = d.getHours();
-        if (hour < 12) tempsMap[key].min = temps[i]; // 早朝 = 最低
-        else           tempsMap[key].max = temps[i]; // 昼  = 最高
-      });
-    }
-
-    const today = new Date();
-    const html = days.map(({ label, idx }) => {
-      const code  = wxArea.weatherCodes ? wxArea.weatherCodes[idx] : '';
-      const text  = wxArea.weathers     ? wxArea.weathers[idx]     : '';
-      const emoji = codeToEmoji(code);
-      const desc  = shortWeather(text);
-
-      const dt = new Date(today);
-      dt.setDate(today.getDate() + idx);
-      const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-      const t = tempsMap[key] || {};
-
-      const tempHtml = (t.max || t.min)
-        ? `<span class="weather-temp-max">${t.max ?? '-'}°</span> / <span class="weather-temp-min">${t.min ?? '-'}°</span>`
-        : '';
-
-      return `
-        <div class="weather-day">
-          <span class="weather-day-label">${label}</span>
-          <span class="weather-icon">${emoji}</span>
-          <div class="weather-info">
-            <div class="weather-desc">${desc}</div>
-            ${tempHtml ? `<div class="weather-temp">${tempHtml}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-
-    container.innerHTML = html;
-
+    // 同一都道府県ならAPIコールは1回で済む
+    const prefSet = [...new Set([city1.pref, city2.pref])];
+    const prefCache = {};
+    await Promise.all(prefSet.map(async pref => {
+      const res = await fetch(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json`);
+      if (!res.ok) throw new Error(`fetch error: ${pref}`);
+      prefCache[pref] = await res.json();
+    }));
+    renderWeatherWidget(
+      extractCityWeather(prefCache[city1.pref], city1), loc1Name,
+      extractCityWeather(prefCache[city2.pref], city2), loc2Name,
+    );
   } catch (e) {
     container.innerHTML = '<div class="weather-error">天気を取得できませんでした</div>';
     console.warn('天気取得エラー:', e);
   }
+}
+
+/** 天気設定ポップアップの初期化 */
+function initWeatherSettings() {
+  const btn    = document.getElementById('btn-weather-settings');
+  const popup  = document.getElementById('weather-settings-popup');
+  const sel1   = document.getElementById('ws-loc1');
+  const sel2   = document.getElementById('ws-loc2');
+  const saveBtn= document.getElementById('btn-ws-save');
+  if (!btn || !popup || !sel1 || !sel2) return;
+
+  // 都道府県グループ付きセレクトリストを生成
+  const PREF_LABELS = {
+    '050000': '秋田県', '040000': '宮城県', '030000': '岩手県',
+    '020000': '青森県', '060000': '山形県', '070000': '福島県',
+  };
+  let optHtml = '';
+  let lastPref = null;
+  WEATHER_CITIES.forEach(c => {
+    if (c.pref !== lastPref) {
+      if (lastPref) optHtml += '</optgroup>';
+      optHtml += `<optgroup label="${PREF_LABELS[c.pref] || c.pref}">`;
+      lastPref = c.pref;
+    }
+    optHtml += `<option value="${c.name}">${c.name}</option>`;
+  });
+  if (lastPref) optHtml += '</optgroup>';
+  sel1.innerHTML = optHtml;
+  sel2.innerHTML = optHtml;
+
+  // 現在の設定を反映
+  sel1.value = localStorage.getItem('wx_loc1') || '秋田市';
+  sel2.value = localStorage.getItem('wx_loc2') || '横手市';
+
+  // ⚙ボタン：ポップアップ開閉
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    popup.classList.toggle('hidden');
+  });
+
+  // 保存して再取得
+  saveBtn.addEventListener('click', () => {
+    localStorage.setItem('wx_loc1', sel1.value);
+    localStorage.setItem('wx_loc2', sel2.value);
+    popup.classList.add('hidden');
+    document.getElementById('weather-content').innerHTML =
+      '<div class="weather-loading"><span class="weather-dots"><span></span><span></span><span></span></span></div>';
+    loadWeather();
+  });
+
+  // ポップアップ外クリックで閉じる
+  document.addEventListener('click', e => {
+    if (!popup.classList.contains('hidden') &&
+        !popup.contains(e.target) && e.target !== btn) {
+      popup.classList.add('hidden');
+    }
+  });
 }
 
 /**
@@ -389,6 +488,7 @@ async function onSignedIn() {
     showLoading(false);
 
     // 施設・TODO・天気はバックグラウンドで取得（初期表示に不要）
+    initWeatherSettings();
     Promise.all([
       fetchFacilities(),
       fetchTodos(),

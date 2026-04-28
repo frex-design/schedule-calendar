@@ -213,11 +213,33 @@
 
         <!-- 天気ウィジェット -->
         <div class="weather-widget" id="weather-widget">
-          <div class="weather-widget-title">
-            <i data-lucide="cloud-sun"></i> 秋田の天気
+          <div class="weather-widget-header">
+            <div class="weather-widget-title">
+              <i data-lucide="cloud-sun"></i> 天気予報
+            </div>
+            <button class="weather-settings-btn" id="btn-weather-settings" title="地点を設定">
+              <i data-lucide="settings-2"></i>
+            </button>
           </div>
-          <div id="weather-content" class="weather-loading">
-            <span class="weather-dots"><span></span><span></span><span></span></span>
+          <!-- 設定ポップアップ -->
+          <div class="weather-settings-popup hidden" id="weather-settings-popup">
+            <div class="ws-row">
+              <label class="ws-label">地点 1</label>
+              <select class="ws-select" id="ws-loc1"></select>
+            </div>
+            <div class="ws-row">
+              <label class="ws-label">地点 2</label>
+              <select class="ws-select" id="ws-loc2"></select>
+            </div>
+            <div class="ws-footer">
+              <button class="ws-save-btn" id="btn-ws-save">保存して更新</button>
+            </div>
+          </div>
+          <!-- 天気コンテンツ -->
+          <div id="weather-content">
+            <div class="weather-loading">
+              <span class="weather-dots"><span></span><span></span><span></span></span>
+            </div>
           </div>
         </div>
       </aside>
