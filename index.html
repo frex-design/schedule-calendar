@@ -6,6 +6,15 @@
   <meta name="description" content="FRe:x Schedule - 社員グループスケジュール管理ツール">
   <title>スケジュール管理ツール ｜ FRe:x Design inc.</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a2035">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FRe:x">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
   <!-- Google Fonts: 非同期読み込み（初回ロードをブロックしない） -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -810,6 +819,17 @@
 
   <!-- カスタム日付ピッカーポップアップ（fixed位置） -->
   <div id="date-picker-popup" class="dp-popup hidden"></div>
+
+  <!-- Service Worker 登録 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/schedule-calendar/service-worker.js')
+          .then(reg => console.log('[SW] registered:', reg.scope))
+          .catch(err => console.warn('[SW] registration failed:', err));
+      });
+    }
+  </script>
 
 </body>
 </html>
