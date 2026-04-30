@@ -2612,6 +2612,29 @@ ul, ol { list-style: none; }
   .header-user-name { display: none; }
   .header-logout-btn { font-size: 12px; padding: 5px 10px; }
 
+  /* グループ週：社員名セル — 折り返し許可 */
+  .group-schedule-table td.name-cell {
+    width: 56px;
+    min-width: 56px;
+    padding: 4px 2px;
+  }
+  .name-cell-inner {
+    max-height: none;
+  }
+  .name-cell-name {
+    white-space: normal;
+    word-break: break-all;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .name-cell-dept {
+    display: none;
+  }
+  .group-schedule-table th.name-col {
+    width: 56px;
+    min-width: 56px;
+  }
+
   /* ページ全体の横はみ出しを防止（ブラウザの自動縮小ズームを抑止） */
   body { overflow-x: hidden; }
 
