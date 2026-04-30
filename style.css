@@ -2644,9 +2644,74 @@ ul, ol { list-style: none; }
     font-size: 11px;
   }
 
+  /* ========== ホーム画面（スケジュール） ========== */
+
+  /* ビュータブ：コンパクトな横スクロールピル型 */
+  .view-tabs {
+    padding: 8px 10px;
+    gap: 6px;
+    background: var(--bb-beige);
+    border-bottom: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .view-tabs::-webkit-scrollbar { display: none; }
+
   .view-tab {
-    padding: 10px 12px;
+    padding: 6px 14px;
     font-size: 11px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: transparent;
+    color: var(--bb-mid);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+  .view-tab.active {
+    background: var(--bb-white);
+    color: var(--bb-blue);
+    border-color: var(--bb-blue);
+    border-bottom-color: var(--bb-blue);
+  }
+
+  /* カレンダーナビ：コンパクトに */
+  .calendar-nav {
+    padding: 7px 10px;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+  .nav-period {
+    font-size: 13px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nav-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+  .nav-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  /* ＋予定追加ボタン：ボトムナビと重複するので非表示 */
+  .add-event-btn { display: none; }
+
+  /* カレンダーコンテンツ：縦スクロール可能に */
+  .calendar-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .event-type-grid {
