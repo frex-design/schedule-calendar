@@ -2117,8 +2117,8 @@ async function submitTodoForm(e) {
   }
 
   await addTodo(title, dueDate, priority);
-  document.getElementById('todo-add-form').reset();
-  document.getElementById('todo-add-form').classList.remove('open');
+  document.getElementById('todo-form').reset();
+  document.getElementById('todo-form').classList.remove('open');
 }
 
 // ----------------------------------------
@@ -3146,7 +3146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ============================================================
 
   document.getElementById('btn-add-todo').addEventListener('click', () => {
-    const form = document.getElementById('todo-add-form');
+    const form = document.getElementById('todo-form');
     form.classList.toggle('open');
   });
 
