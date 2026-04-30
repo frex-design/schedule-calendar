@@ -2684,6 +2684,23 @@ ul, ol { list-style: none; }
     flex-shrink: 0;
   }
 
+  /* ========== スマホ ローディング（スプラッシュ） ========== */
+  #loading-overlay {
+    background: var(--bb-dark);
+  }
+  .loading-logo {
+    color: var(--bb-white);
+    font-size: 32px;
+    letter-spacing: 5px;
+  }
+  .loading-label {
+    color: rgba(255,255,255,0.4);
+  }
+  .loading-bar {
+    background: var(--bb-blue);
+    opacity: 0.7;
+  }
+
   /* ========== スマホ ログイン画面 ========== */
 
   /* 全画面レイアウト：カード感をなくし画面いっぱいに */
