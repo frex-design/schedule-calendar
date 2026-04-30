@@ -2684,7 +2684,57 @@ ul, ol { list-style: none; }
     flex-shrink: 0;
   }
 
-  .auth-body { padding: 24px 20px; }
-  .auth-header { padding: 28px 24px 20px; }
-  .auth-logo { font-size: 22px; }
+  /* ========== スマホ ログイン画面 ========== */
+
+  /* 全画面レイアウト：カード感をなくし画面いっぱいに */
+  #auth-screen {
+    align-items: stretch;
+    padding: 0;
+    background: var(--bb-dark);
+  }
+
+  .auth-container {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ヘッダー：ロゴを大きく・余白を広めに取って存在感を出す */
+  .auth-header {
+    padding: env(safe-area-inset-top, 52px) 28px 40px;
+    padding-top: max(52px, env(safe-area-inset-top));
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .auth-logo { font-size: 30px; letter-spacing: 5px; }
+  .auth-subtitle { font-size: 11px; margin-top: 4px; }
+
+  /* フォームエリア：角丸で白背景・画面下まで伸びる */
+  .auth-body {
+    flex: 1;
+    padding: 32px 24px 48px;
+    border-radius: 24px 24px 0 0;
+    background: var(--bb-white);
+  }
+
+  /* iOS のズーム防止：input を 16px に */
+  .form-input {
+    font-size: 16px !important;
+    padding: 13px 14px;
+  }
+
+  /* タブをもう少し大きく */
+  .auth-tab { padding: 12px 10px; font-size: 14px; }
+
+  /* ボタンを指でタップしやすい高さに */
+  .btn-block {
+    height: 50px;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+  }
 }
