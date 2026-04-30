@@ -2666,6 +2666,11 @@ ul, ol { list-style: none; }
 
   #sidebar { display: none; }
 
+  /* iOS ズーム防止：input/select/textarea は必ず16px以上 */
+  input, select, textarea, .form-input {
+    font-size: 16px !important;
+  }
+
   /* ボトムナビ分の余白（safe area対応） */
   #main-content {
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 16px)) !important;
