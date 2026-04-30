@@ -2994,9 +2994,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('mob-nav-add')?.addEventListener('click', () => {
     openEventModal(toDateStr(currentDate));
   });
-  document.getElementById('mob-nav-settings')?.addEventListener('click', () => {
-    document.getElementById('btn-settings').click();
-  });
 
   // ログアウト
   document.getElementById('btn-logout').addEventListener('click', signOut);
