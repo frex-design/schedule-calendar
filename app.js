@@ -486,6 +486,13 @@ async function onSignedIn() {
     ]);
     // 画面をすぐに表示
     showAppScreen();
+    // モバイルはデフォルトで個人月表示
+    if (window.innerWidth <= 768 && currentView === 'group-week') {
+      currentView = 'personal-month';
+      document.querySelectorAll('.view-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.view === 'personal-month');
+      });
+    }
     renderCurrentView();
     showLoading(false);
 
