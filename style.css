@@ -2606,6 +2606,9 @@ ul, ol { list-style: none; }
   .header-user-name { display: none; }
   .header-logout-btn { font-size: 12px; padding: 5px 10px; }
 
+  /* ページ全体の横はみ出しを防止（ブラウザの自動縮小ズームを抑止） */
+  body { overflow-x: hidden; }
+
   /* カレンダーコンテンツを横スクロール可能に */
   #calendar-content { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
