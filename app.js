@@ -2237,12 +2237,14 @@ function showSchedulePage() {
   currentPage = 'schedule';
   document.getElementById('page-schedule').classList.remove('hidden');
   document.getElementById('page-todo').classList.add('hidden');
+  document.getElementById('page-process')?.classList.add('hidden');
   document.getElementById('sidebar').classList.remove('hidden');
   document.getElementById('nav-schedule').classList.add('active');
   document.getElementById('nav-todo').classList.remove('active');
   // モバイルナビ同期
   document.getElementById('mob-nav-schedule')?.classList.add('active');
   document.getElementById('mob-nav-todo')?.classList.remove('active');
+  document.getElementById('mob-nav-process')?.classList.remove('active');
 }
 
 /**
@@ -2252,13 +2254,32 @@ function showTodoPage() {
   currentPage = 'todo';
   document.getElementById('page-schedule').classList.add('hidden');
   document.getElementById('page-todo').classList.remove('hidden');
+  document.getElementById('page-process')?.classList.add('hidden');
   document.getElementById('sidebar').classList.remove('hidden');
   document.getElementById('nav-schedule').classList.remove('active');
   document.getElementById('nav-todo').classList.add('active');
   // モバイルナビ同期
   document.getElementById('mob-nav-schedule')?.classList.remove('active');
   document.getElementById('mob-nav-todo')?.classList.add('active');
+  document.getElementById('mob-nav-process')?.classList.remove('active');
   renderTodos();
+}
+
+/**
+ * 工程管理表ページに切り替え
+ */
+function showProcessPage() {
+  currentPage = 'process';
+  document.getElementById('page-schedule').classList.add('hidden');
+  document.getElementById('page-todo').classList.add('hidden');
+  document.getElementById('page-process').classList.remove('hidden');
+  document.getElementById('sidebar').classList.add('hidden');
+  document.getElementById('nav-schedule').classList.remove('active');
+  document.getElementById('nav-todo').classList.remove('active');
+  // モバイルナビ同期
+  document.getElementById('mob-nav-schedule')?.classList.remove('active');
+  document.getElementById('mob-nav-todo')?.classList.remove('active');
+  document.getElementById('mob-nav-process')?.classList.add('active');
 }
 
 /**
@@ -2969,6 +2990,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // モバイル ボトムナビ
   document.getElementById('mob-nav-schedule')?.addEventListener('click', showSchedulePage);
   document.getElementById('mob-nav-todo')?.addEventListener('click', showTodoPage);
+  document.getElementById('mob-nav-process')?.addEventListener('click', showProcessPage);
   document.getElementById('mob-nav-add')?.addEventListener('click', () => {
     openEventModal(toDateStr(currentDate));
   });

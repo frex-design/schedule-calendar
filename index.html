@@ -285,6 +285,17 @@
           </div>
         </div>
 
+        <!-- 工程管理表ページ（iframe埋め込み） -->
+        <div id="page-process" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+          <iframe
+            id="process-iframe"
+            src="https://frex-design.github.io/process-chart/"
+            style="flex:1;width:100%;border:none;"
+            title="工程管理表システム"
+            allow="same-origin"
+          ></iframe>
+        </div>
+
         <!-- TODOページ -->
         <div id="page-todo" class="hidden" style="overflow-y:auto;flex:1;">
           <div class="todo-page">
@@ -340,6 +351,10 @@
       <button class="mob-nav-btn mob-nav-add-btn" id="mob-nav-add">
         <i data-lucide="plus"></i>
         <span>追加</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-process">
+        <i data-lucide="bar-chart-2"></i>
+        <span>工程</span>
       </button>
       <button class="mob-nav-btn" id="mob-nav-todo">
         <i data-lucide="check-square"></i>
