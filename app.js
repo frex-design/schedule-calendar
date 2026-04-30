@@ -1954,6 +1954,11 @@ function closeModal(id) {
   if (el) el.classList.add('hidden');
 }
 
+/** すべてのモーダルを閉じる（ボトムナビ遷移時に使用） */
+function closeAllModals() {
+  ['event-modal', 'event-detail-modal', 'profile-modal', 'guide-modal', 'ical-modal'].forEach(closeModal);
+}
+
 /**
  * 参加者リストを描画
  */
@@ -2995,10 +3000,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nav-schedule').addEventListener('click', showSchedulePage);
   document.getElementById('nav-todo').addEventListener('click', showTodoPage);
 
-  // モバイル ボトムナビ
-  document.getElementById('mob-nav-schedule')?.addEventListener('click', showSchedulePage);
-  document.getElementById('mob-nav-todo')?.addEventListener('click', showTodoPage);
-  document.getElementById('mob-nav-process')?.addEventListener('click', showProcessPage);
+  // モバイル ボトムナビ（遷移前に全モーダルを閉じる）
+  document.getElementById('mob-nav-schedule')?.addEventListener('click', () => { closeAllModals(); showSchedulePage(); });
+  document.getElementById('mob-nav-todo')?.addEventListener('click',     () => { closeAllModals(); showTodoPage(); });
+  document.getElementById('mob-nav-process')?.addEventListener('click',  () => { closeAllModals(); showProcessPage(); });
   document.getElementById('mob-nav-add')?.addEventListener('click', () => {
     openEventModal(toDateStr(currentDate));
   });
