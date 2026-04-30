@@ -2582,8 +2582,24 @@ ul, ol { list-style: none; }
 
   #sidebar { display: none; }
 
-  /* ボトムナビ分の余白 */
-  #main-content { padding-bottom: 64px !important; }
+  /* ボトムナビ分の余白（safe area対応） */
+  #main-content {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 16px)) !important;
+  }
+
+  /* ========== ローディング（スプラッシュ） ========== */
+  #loading-overlay {
+    background: var(--bb-dark);
+    /* iOSでコンテンツが上寄りに見えないようブラウザChrome分を補正 */
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  .loading-logo {
+    color: var(--bb-white);
+    font-size: 28px;
+    letter-spacing: 5px;
+  }
+  .loading-label { color: rgba(255,255,255,0.4); }
+  .loading-bar   { opacity: 0.7; }
 
   #app-header { padding: 0 12px; }
   .header-logo { font-size: 16px; }
@@ -2593,12 +2609,15 @@ ul, ol { list-style: none; }
   /* カレンダーコンテンツを横スクロール可能に */
   #calendar-content { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-  /* モバイル ボトムナビ */
+  /* モバイル ボトムナビ（safe area対応） */
   .mobile-bottom-nav {
     display: flex;
+    align-items: stretch;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 60px;
+    /* iPhoneホームインジケーター分を padding-bottom で確保 */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
     background: var(--bb-white);
     border-top: 1px solid var(--bb-light);
     box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
@@ -2619,13 +2638,16 @@ ul, ol { list-style: none; }
     font-family: inherit;
     cursor: pointer;
     transition: color var(--transition);
-    padding: 6px 0;
+    /* paddingで60px領域内に収める */
+    padding: 8px 0 4px;
+    align-self: flex-start;
+    height: 60px;
   }
   .mob-nav-btn svg { width: 20px; height: 20px; }
   .mob-nav-btn.active { color: var(--bb-blue); }
   .mob-nav-btn:active { opacity: 0.7; }
 
-  /* ＋追加ボタンを目立たせる */
+  /* ＋追加ボタン：高さを他のボタンと揃えつつ目立たせる */
   .mob-nav-add-btn {
     color: var(--bb-white);
     background: var(--bb-blue);
@@ -2633,6 +2655,9 @@ ul, ol { list-style: none; }
     margin: 8px 6px;
     flex: 1.2;
     gap: 2px;
+    height: 44px;
+    align-self: center;
+    padding: 0;
   }
   .mob-nav-add-btn svg { width: 18px; height: 18px; }
 
@@ -2747,23 +2772,6 @@ ul, ol { list-style: none; }
   .view-tab {
     white-space: nowrap;
     flex-shrink: 0;
-  }
-
-  /* ========== スマホ ローディング（スプラッシュ） ========== */
-  #loading-overlay {
-    background: var(--bb-dark);
-  }
-  .loading-logo {
-    color: var(--bb-white);
-    font-size: 32px;
-    letter-spacing: 5px;
-  }
-  .loading-label {
-    color: rgba(255,255,255,0.4);
-  }
-  .loading-bar {
-    background: var(--bb-blue);
-    opacity: 0.7;
   }
 
   /* ========== スマホ ログイン画面 ========== */
