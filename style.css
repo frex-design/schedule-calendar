@@ -2918,17 +2918,36 @@ ul, ol { list-style: none; }
 
   .todo-form-row { grid-template-columns: 1fr; }
 
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+    /* ボトムナビ分だけ上にずらす */
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+
   .modal {
     max-width: 100%;
     margin: 0;
     border-radius: var(--radius-content) var(--radius-content) 0 0;
-    max-height: 95vh;
+    /* ボトムナビ分を引いた高さ */
+    max-height: calc(92vh - 60px - env(safe-area-inset-bottom, 0px));
+    /* フレックスでheader・body・footerを分離 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
-  .modal-overlay {
-    align-items: flex-end;
-    padding: 0;
+  .modal-header { flex-shrink: 0; }
+
+  /* bodyだけスクロール */
+  .modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
+
+  /* footerは常に下に固定 */
+  .modal-footer { flex-shrink: 0; }
 
   .btn {
     font-size: 13px;
