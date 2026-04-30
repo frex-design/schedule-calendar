@@ -2632,6 +2632,28 @@ ul, ol { list-style: none; }
   display: inline-block;
 }
 
+/* ガイド注意書き */
+.guide-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 16px 16px;
+  padding: 12px 14px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #5a4000;
+}
+.guide-notice svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #f59e0b;
+}
+
 .guide-qr-wrap {
   display: flex;
   align-items: center;
