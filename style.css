@@ -762,6 +762,27 @@ ul, ol { list-style: none; }
   font-weight: 500;
 }
 
+/* 会議室予約リンク（サイドバー） */
+.room-reserve-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-content);
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  color: #7a5a00;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background var(--transition);
+}
+.room-reserve-btn:hover {
+  background: #fff3cc;
+}
+.room-reserve-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
 /* ----------------------------------------
    天気ウィジェット（サイドバー）パターン⑥ 2地点対応
    ---------------------------------------- */
