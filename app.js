@@ -477,6 +477,10 @@ async function onSignedIn() {
   isAppReady = true;
   showLoading(true);
   try {
+    // モバイルはデフォルトで個人月表示（データ取得前に切り替える）
+    if (window.innerWidth <= 768 && currentView === 'group-week') {
+      currentView = 'personal-month';
+    }
     // カレンダー表示に必要なデータを優先取得
     const [start, end] = getDateRange();
     await Promise.all([
@@ -486,13 +490,10 @@ async function onSignedIn() {
     ]);
     // 画面をすぐに表示
     showAppScreen();
-    // モバイルはデフォルトで個人月表示
-    if (window.innerWidth <= 768 && currentView === 'group-week') {
-      currentView = 'personal-month';
-      document.querySelectorAll('.view-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.view === 'personal-month');
-      });
-    }
+    // ビュータブの active 状態を更新
+    document.querySelectorAll('.view-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.view === currentView);
+    });
     renderCurrentView();
     showLoading(false);
 
