@@ -2693,9 +2693,22 @@ ul, ol { list-style: none; }
     font-size: 16px !important;
   }
 
+  /* app-body に明示的な高さを与えて flex 子要素がスクロールできるようにする */
+  .app-body {
+    height: calc(100vh - var(--header-height) - env(safe-area-inset-top, 0px));
+    min-height: unset;
+  }
+
   /* ボトムナビ分の余白（safe area対応） */
   #main-content {
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 16px)) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* page-todo もボトムナビ高さ分パディング */
+  #page-todo {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 16px));
   }
 
   /* ========== ローディング（スプラッシュ） ========== */
@@ -2939,9 +2952,10 @@ ul, ol { list-style: none; }
 
   .modal-header { flex-shrink: 0; }
 
-  /* bodyだけスクロール */
+  /* bodyだけスクロール（min-height: 0 がiOS flexboxスクロールに必須） */
   .modal-body {
     flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
