@@ -319,6 +319,28 @@
 
       </main>
     </div>
+
+    <!-- ========================================
+         モバイル ボトムナビ（スマホのみ表示）
+         ======================================== -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <button class="mob-nav-btn active" id="mob-nav-schedule">
+        <i data-lucide="calendar"></i>
+        <span>スケジュール</span>
+      </button>
+      <button class="mob-nav-btn mob-nav-add-btn" id="mob-nav-add">
+        <i data-lucide="plus"></i>
+        <span>追加</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-todo">
+        <i data-lucide="check-square"></i>
+        <span>TODO</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-nav-settings">
+        <i data-lucide="settings"></i>
+        <span>設定</span>
+      </button>
+    </nav>
   </div>
 
   <!-- ========================================
@@ -686,6 +708,23 @@
             <div class="guide-row"><span class="guide-label">購読URL</span><span>設定モーダルの「iCal 購読URL」をカレンダーアプリに登録すると常に最新の予定が自動同期されます。</span></div>
             <div class="guide-row"><span class="guide-label">インポート方法</span><span>Googleカレンダー → 設定 → 「URLでカレンダーを追加」にURLを貼り付けます。</span></div>
             <div class="guide-row"><span class="guide-label">iCal / Outlook</span><span>Apple カレンダーや Outlook でも同様にURLを購読できます。</span></div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title"><i data-lucide="smartphone"></i> スマホで使う</div>
+          <div class="guide-section-body">
+            <div class="guide-qr-wrap">
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Ffrex-design.github.io%2Fschedule-calendar%2F&color=1a2332&bgcolor=ffffff&margin=1"
+                alt="QRコード"
+                class="guide-qr-img"
+                width="120" height="120">
+              <div class="guide-qr-info">
+                <p>スマホのカメラでQRを読み取ると<br>スマホ最適化レイアウトでそのまま使えます。</p>
+                <code class="guide-qr-url">frex-design.github.io/schedule-calendar/</code>
+              </div>
+            </div>
           </div>
         </div>
 

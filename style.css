@@ -2541,6 +2541,40 @@ ul, ol { list-style: none; }
 }
 
 /* ----------------------------------------
+   モバイル ボトムナビ（デスクトップでは非表示）
+   ---------------------------------------- */
+.mobile-bottom-nav { display: none; }
+
+/* ----------------------------------------
+   操作ガイド QRコード
+   ---------------------------------------- */
+.guide-qr-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.guide-qr-img {
+  border-radius: 8px;
+  border: 1px solid var(--bb-light);
+  flex-shrink: 0;
+}
+.guide-qr-info p {
+  font-size: 13px;
+  color: var(--bb-mid);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+.guide-qr-url {
+  display: inline-block;
+  font-size: 11px;
+  background: var(--bb-beige);
+  color: var(--bb-blue);
+  padding: 4px 10px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+/* ----------------------------------------
    レスポンシブ
    ---------------------------------------- */
 @media (max-width: 768px) {
@@ -2548,14 +2582,67 @@ ul, ol { list-style: none; }
 
   #sidebar { display: none; }
 
+  /* ボトムナビ分の余白 */
+  #main-content { padding-bottom: 64px !important; }
+
+  #app-header { padding: 0 12px; }
+  .header-logo { font-size: 16px; }
+  .header-user-name { display: none; }
+  .header-logout-btn { font-size: 12px; padding: 5px 10px; }
+
+  /* カレンダーコンテンツを横スクロール可能に */
+  #calendar-content { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* モバイル ボトムナビ */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--bb-white);
+    border-top: 1px solid var(--bb-light);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+    z-index: 900;
+  }
+
+  .mob-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    color: var(--bb-mid);
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color var(--transition);
+    padding: 6px 0;
+  }
+  .mob-nav-btn svg { width: 20px; height: 20px; }
+  .mob-nav-btn.active { color: var(--bb-blue); }
+  .mob-nav-btn:active { opacity: 0.7; }
+
+  /* ＋追加ボタンを目立たせる */
+  .mob-nav-add-btn {
+    color: var(--bb-white);
+    background: var(--bb-blue);
+    border-radius: 14px;
+    margin: 8px 6px;
+    flex: 1.2;
+    gap: 2px;
+  }
+  .mob-nav-add-btn svg { width: 18px; height: 18px; }
+
+  /* QRコードをモバイルで縦並びに */
+  .guide-qr-wrap { flex-direction: column; align-items: flex-start; gap: 12px; }
+
   .header-nav-btn {
     padding: 5px 10px;
     font-size: 11px;
   }
-
-  .header-logo { font-size: 14px; }
-
-  .header-user-name { display: none; }
 
   .view-tab {
     padding: 10px 12px;

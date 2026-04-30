@@ -2240,6 +2240,9 @@ function showSchedulePage() {
   document.getElementById('sidebar').classList.remove('hidden');
   document.getElementById('nav-schedule').classList.add('active');
   document.getElementById('nav-todo').classList.remove('active');
+  // モバイルナビ同期
+  document.getElementById('mob-nav-schedule')?.classList.add('active');
+  document.getElementById('mob-nav-todo')?.classList.remove('active');
 }
 
 /**
@@ -2252,6 +2255,9 @@ function showTodoPage() {
   document.getElementById('sidebar').classList.remove('hidden');
   document.getElementById('nav-schedule').classList.remove('active');
   document.getElementById('nav-todo').classList.add('active');
+  // モバイルナビ同期
+  document.getElementById('mob-nav-schedule')?.classList.remove('active');
+  document.getElementById('mob-nav-todo')?.classList.add('active');
   renderTodos();
 }
 
@@ -2959,6 +2965,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ヘッダーナビゲーション
   document.getElementById('nav-schedule').addEventListener('click', showSchedulePage);
   document.getElementById('nav-todo').addEventListener('click', showTodoPage);
+
+  // モバイル ボトムナビ
+  document.getElementById('mob-nav-schedule')?.addEventListener('click', showSchedulePage);
+  document.getElementById('mob-nav-todo')?.addEventListener('click', showTodoPage);
+  document.getElementById('mob-nav-add')?.addEventListener('click', () => {
+    openEventModal(toDateStr(currentDate));
+  });
+  document.getElementById('mob-nav-settings')?.addEventListener('click', () => {
+    document.getElementById('btn-settings').click();
+  });
 
   // ログアウト
   document.getElementById('btn-logout').addEventListener('click', signOut);
