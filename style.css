@@ -2554,6 +2554,65 @@ ul, ol { list-style: none; }
 /* ----------------------------------------
    操作ガイド QRコード
    ---------------------------------------- */
+/* アプリインストールセクション */
+.guide-app-section {
+  background: linear-gradient(135deg, #f0f5ff 0%, #f8f9fb 100%);
+  border-left: 4px solid var(--bb-blue) !important;
+}
+.guide-app-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+.guide-app-qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.guide-app-qr-label {
+  font-size: 10px;
+  color: var(--bb-mid);
+  text-align: center;
+}
+.guide-app-info {
+  flex: 1;
+  min-width: 0;
+}
+.guide-app-badge {
+  display: inline-block;
+  background: var(--bb-blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.guide-app-desc {
+  font-size: 13px;
+  color: var(--bb-dark);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.guide-app-steps {
+  margin: 0 0 10px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--bb-dark);
+}
+.guide-app-steps li { margin: 0; }
+.guide-app-note {
+  font-size: 11px;
+  color: var(--bb-mid);
+  background: #fff3cd;
+  border-radius: 6px;
+  padding: 4px 10px;
+  display: inline-block;
+}
+
 .guide-qr-wrap {
   display: flex;
   align-items: center;
@@ -2695,6 +2754,9 @@ ul, ol { list-style: none; }
 
   /* QRコードをモバイルで縦並びに */
   .guide-qr-wrap { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .guide-app-wrap { flex-direction: column; gap: 12px; }
+  .guide-app-qr-block { flex-direction: row; align-items: center; gap: 12px; }
+  .guide-app-qr-label { display: none; }
 
   .header-nav-btn {
     padding: 5px 10px;

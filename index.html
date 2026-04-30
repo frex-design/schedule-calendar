@@ -668,6 +668,34 @@
       </div>
       <div class="modal-body guide-body">
 
+        <!-- ★ アプリとして追加（最上部） -->
+        <div class="guide-section guide-app-section">
+          <div class="guide-section-title"><i data-lucide="smartphone"></i> アプリとしてインストール</div>
+          <div class="guide-section-body">
+            <div class="guide-app-wrap">
+              <div class="guide-app-qr-block">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Ffrex-design.github.io%2Fschedule-calendar%2F&color=1a2035&bgcolor=ffffff&margin=2"
+                  alt="アプリQRコード"
+                  class="guide-qr-img"
+                  width="110" height="110">
+                <div class="guide-app-qr-label">カメラで読み取り</div>
+              </div>
+              <div class="guide-app-info">
+                <div class="guide-app-badge">📱 ホーム画面アプリ化</div>
+                <p class="guide-app-desc">iPhoneのSafariでQRを読み取り、下記の手順でホーム画面に追加するとアプリとして起動できます。</p>
+                <ol class="guide-app-steps">
+                  <li><strong>Safari</strong>でQRコードを開く</li>
+                  <li>画面下の <strong>共有ボタン（□↑）</strong> をタップ</li>
+                  <li><strong>「表示を増やす ∨」</strong> をタップ</li>
+                  <li><strong>「ホーム画面に追加」</strong> → 追加</li>
+                </ol>
+                <div class="guide-app-note">※ ChromeではなくSafariで開くこと</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="guide-section">
           <div class="guide-section-title"><i data-lucide="layout"></i> ビューの切り替え</div>
           <div class="guide-section-body">
@@ -717,23 +745,6 @@
             <div class="guide-row"><span class="guide-label">購読URL</span><span>設定モーダルの「iCal 購読URL」をカレンダーアプリに登録すると常に最新の予定が自動同期されます。</span></div>
             <div class="guide-row"><span class="guide-label">インポート方法</span><span>Googleカレンダー → 設定 → 「URLでカレンダーを追加」にURLを貼り付けます。</span></div>
             <div class="guide-row"><span class="guide-label">iCal / Outlook</span><span>Apple カレンダーや Outlook でも同様にURLを購読できます。</span></div>
-          </div>
-        </div>
-
-        <div class="guide-section">
-          <div class="guide-section-title"><i data-lucide="smartphone"></i> スマホで使う</div>
-          <div class="guide-section-body">
-            <div class="guide-qr-wrap">
-              <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Ffrex-design.github.io%2Fschedule-calendar%2F&color=1a2332&bgcolor=ffffff&margin=1"
-                alt="QRコード"
-                class="guide-qr-img"
-                width="120" height="120">
-              <div class="guide-qr-info">
-                <p>スマホのカメラでQRを読み取ると<br>スマホ最適化レイアウトでそのまま使えます。</p>
-                <code class="guide-qr-url">frex-design.github.io/schedule-calendar/</code>
-              </div>
-            </div>
           </div>
         </div>
 
