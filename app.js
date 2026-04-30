@@ -2318,7 +2318,7 @@ async function switchView(view) {
  * 非表示時はフェードアウトしてから display:none（CSSトランジション連携）
  */
 let _loadingShowTime = 0;
-const _LOADING_MIN_MS = 600; // 初回オープニングの最低表示時間
+const _LOADING_MIN_MS = 200; // 初回オープニングの最低表示時間
 
 function showLoading(show) {
   const el = document.getElementById('loading-overlay');
