@@ -1205,6 +1205,8 @@ ul, ol { list-style: none; }
   border: 1px solid var(--bb-light);
   vertical-align: top;
   text-align: left;
+  /* テーブルセルは max-height が効かないので overflow:hidden で高さを固定 */
+  overflow: hidden;
 }
 
 /* 日付列：最小幅なし、均等に縮む */
@@ -1325,7 +1327,7 @@ ul, ol { list-style: none; }
   width: 130px;
   min-width: 130px;
   height: 52px;
-  max-height: 52px;
+  overflow: hidden;
   border-right: 1px solid var(--bb-light);
 }
 
@@ -1334,6 +1336,8 @@ ul, ol { list-style: none; }
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  max-height: 40px; /* cell height - padding */
+  overflow: hidden;
 }
 
 .name-cell-avatar { flex-shrink: 0; }
