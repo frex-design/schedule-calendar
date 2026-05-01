@@ -475,27 +475,38 @@ async function init() {
 async function onSignedIn() {
   if (isAppReady) return; // タブ復帰時のトークン更新など二重呼び出しを防ぐ
   isAppReady = true;
-  showLoading(true);
+
+  // モバイルはデフォルトで個人月表示（データ取得前に切り替える）
+  if (window.innerWidth <= 768 && currentView === 'group-week') {
+    currentView = 'personal-month';
+  }
+
+  // ★ アプリ画面を即表示＋ローディングオーバーレイをすぐ閉じる（体感速度UP）
+  showAppScreen();
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.view === currentView);
+  });
+  // カレンダーエリアにフェッチ中インジケーターを表示
+  const calContent = document.getElementById('calendar-content');
+  if (calContent) {
+    calContent.innerHTML =
+      '<div class="cal-fetching-indicator">' +
+        '<span class="loading-dots"><span></span><span></span><span></span></span>' +
+      '</div>';
+  }
+  showLoading(false); // ★ オーバーレイをすぐ消す
+
   try {
-    // モバイルはデフォルトで個人月表示（データ取得前に切り替える）
-    if (window.innerWidth <= 768 && currentView === 'group-week') {
-      currentView = 'personal-month';
-    }
-    // カレンダー表示に必要なデータを優先取得
+    // カレンダー表示に必要なデータを並列取得
     const [start, end] = getDateRange();
     await Promise.all([
       fetchOrCreateProfile(),
       fetchAllProfiles(),
       fetchEvents(start, end),
     ]);
-    // 画面をすぐに表示
-    showAppScreen();
-    // ビュータブの active 状態を更新
-    document.querySelectorAll('.view-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.view === currentView);
-    });
+    // データが揃ったら描画
+    updateHeaderUser();
     renderCurrentView();
-    showLoading(false);
 
     // 施設・TODO・天気はバックグラウンドで取得（初期表示に不要）
     initWeatherSettings();
@@ -510,8 +521,6 @@ async function onSignedIn() {
   } catch (err) {
     console.error('サインイン後の処理エラー:', err);
     showToast('データの読み込みに失敗しました。', 'error');
-  } finally {
-    showLoading(false);
   }
 }
 
@@ -2318,7 +2327,7 @@ async function switchView(view) {
  * 非表示時はフェードアウトしてから display:none（CSSトランジション連携）
  */
 let _loadingShowTime = 0;
-const _LOADING_MIN_MS = 200; // 初回オープニングの最低表示時間
+const _LOADING_MIN_MS = 0; // 最低表示時間（即時フェードアウト）
 
 function showLoading(show) {
   const el = document.getElementById('loading-overlay');

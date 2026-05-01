@@ -1,7 +1,7 @@
 // FRe:x Schedule — Service Worker
 // キャッシュ戦略: Network First（常に最新データを優先）
 
-const CACHE_NAME = 'frex-schedule-v13';
+const CACHE_NAME = 'frex-schedule-v14';
 const STATIC_ASSETS = [
   '/schedule-calendar/',
   '/schedule-calendar/index.html',

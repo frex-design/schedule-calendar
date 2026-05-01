@@ -131,6 +131,16 @@ ul, ol { list-style: none; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ----------------------------------------
+   カレンダーエリア フェッチ中インジケーター
+   ---------------------------------------- */
+.cal-fetching-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+/* ----------------------------------------
    ローディングオーバーレイ
    ---------------------------------------- */
 #loading-overlay {
