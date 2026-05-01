@@ -17,7 +17,7 @@ const EVENT_TYPES = {
   'visitor':       { label: '来客',        color: '#01579B', bg: '#E1F5FE', icon: '🤝', lucideIcon: 'user-plus' },
   'out':           { label: '外出',        color: '#E65100', bg: '#FFF3E0', icon: '🚗', lucideIcon: 'car'       },
   'business-trip': { label: '出張',        color: '#6A1B9A', bg: '#F3E5F5', icon: '✈️', lucideIcon: 'plane'     },
-  'holiday':       { label: '休み',        color: '#B71C1C', bg: '#FFEBEE', icon: '🌴', lucideIcon: 'umbrella'  },
+  'holiday':       { label: '休み',        color: '#B71C1C', bg: '#FFEBEE', icon: '☀️', lucideIcon: 'sun'       },
   'other':         { label: 'その他',      color: '#263238', bg: '#ECEFF1', icon: '📝', lucideIcon: 'bookmark'  },
 };
 
