@@ -4,13 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
 
-  <!-- iOS PWA 白フラッシュ防止（外部CSS読み込み前に即時適用、!important なしで外部CSSが後勝ちする） -->
-  <style>
-    @media (max-width: 768px) {
-      html, body { background-color: #1a2035; }
-    }
-  </style>
-
   <meta name="description" content="FRe:x Schedule - 社員グループスケジュール管理ツール">
   <title>スケジュール管理ツール ｜ FRe:x Design inc.</title>
 
@@ -56,7 +49,8 @@
     // =====================================
   </script>
 </head>
-<body>
+<!-- iOS PWA 白フラッシュ防止: body タグにインラインで暗色設定（style.css の !important で後から上書き） -->
+<body style="background-color:#1a2035;">
 
   <!-- ========================================
        ローディングオーバーレイ

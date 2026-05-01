@@ -68,7 +68,7 @@ html {
 
 body {
   font-family: 'Jost', 'Noto Sans JP', 'Hiragino Sans', 'Meiryo', sans-serif;
-  background-color: var(--bg);
+  background-color: var(--bg) !important; /* body インラインstyleを上書き（iOS白フラッシュ対策） */
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
@@ -146,7 +146,7 @@ ul, ol { list-style: none; }
 #loading-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bb-cream);
+  background: #1a2035; /* デフォルト暗色（モバイル白フラッシュ防止）→ desktopは下の @media で上書き */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2713,6 +2713,17 @@ ul, ol { list-style: none; }
 }
 
 /* ----------------------------------------
+   デスクトップ用 ローディングオーバーレイ上書き
+   （デフォルトは #1a2035 暗色 = モバイル用。PCは明色に戻す）
+   ---------------------------------------- */
+@media (min-width: 769px) {
+  #loading-overlay { background: var(--bb-cream); }
+  .loading-logo { color: var(--bb-dark); }
+  .loading-label { color: var(--bb-mid); }
+  .loading-bar { opacity: 1; }
+}
+
+/* ----------------------------------------
    レスポンシブ
    ---------------------------------------- */
 @media (max-width: 768px) {
@@ -2746,11 +2757,11 @@ ul, ol { list-style: none; }
     display: none !important;
   }
 
-  /* ========== ローディング（スプラッシュ） ========== */
+  /* ========== ローディング（スプラッシュ）モバイル補正 ========== */
   #loading-overlay {
-    background: var(--bb-dark);
     /* iOSでコンテンツが上寄りに見えないようブラウザChrome分を補正 */
     padding-bottom: env(safe-area-inset-bottom, 20px);
+    /* 背景色はデフォルト #1a2035 のまま（変更不要） */
   }
   .loading-logo {
     color: var(--bb-white);
