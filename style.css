@@ -49,7 +49,7 @@
 
   --transition:     160ms ease;
   --header-height:  56px;
-  --sidebar-width:  260px;
+  --sidebar-width:  290px;
 }
 
 /* ----------------------------------------
@@ -617,6 +617,7 @@ ul, ol { list-style: none; }
   padding: 20px 16px;
   flex-shrink: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: calc(100vh - var(--header-height) - env(safe-area-inset-top, 0px));
   position: sticky;
   top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
