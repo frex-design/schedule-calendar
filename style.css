@@ -2737,7 +2737,7 @@ ul, ol { list-style: none; }
 
   /* ========== ローディング（スプラッシュ） ========== */
   #loading-overlay {
-    background: var(--bb-dark);
+    background: #1a2035; /* manifest/スプラッシュと同色に統一して白フラッシュ防止 */
     /* iOSでコンテンツが上寄りに見えないようブラウザChrome分を補正 */
     padding-bottom: env(safe-area-inset-bottom, 20px);
   }
