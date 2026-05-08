@@ -2292,6 +2292,11 @@ function showTodoPage() {
  */
 function showProcessPage() {
   currentPage = 'process';
+  // iframe 遅延読み込み：初回タップ時のみ data-src → src にセット
+  const iframe = document.getElementById('process-iframe');
+  if (iframe && iframe.src !== iframe.dataset.src) {
+    iframe.src = iframe.dataset.src;
+  }
   document.getElementById('page-schedule').classList.add('hidden');
   document.getElementById('page-todo').classList.add('hidden');
   document.getElementById('page-process').classList.remove('hidden');
@@ -2342,8 +2347,8 @@ function showLoading(show) {
     setTimeout(() => {
       el.style.opacity       = '0';
       el.style.pointerEvents = 'none';
-      // フェードアウト完了後に非表示化
-      setTimeout(() => { el.style.display = 'none'; }, 450);
+      // フェードアウト完了後に非表示化（CSSトランジションと合わせて250ms）
+      setTimeout(() => { el.style.display = 'none'; }, 250);
     }, delay);
   }
 }

@@ -19,6 +19,9 @@
   <!-- Google Fonts: 非同期読み込み（初回ロードをブロックしない） -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- app.js を早期プリロード（パーサーがbodyに到達する前にDL開始） -->
+  <link rel="preload" as="script" href="app.js">
   <link rel="preload" as="style"
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Figtree:wght@400;500;600;700&display=swap"
         onload="this.onload=null;this.rel='stylesheet'">
@@ -26,11 +29,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
   </noscript>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Lucide Icons: jsdelivr + バージョン固定 + defer（HTMLパースをブロックしない） -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@1.14.0/dist/umd/lucide.min.js" defer></script>
 
-  <!-- Supabase JS SDK (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS SDK (CDN): defer（HTMLパースをブロックしない） -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
   <!-- スタイルシート -->
   <link rel="stylesheet" href="style.css">
@@ -297,9 +300,11 @@
 
         <!-- 工程管理表ページ（iframe埋め込み） -->
         <div id="page-process" class="hidden" style="flex:1;display:flex;flex-direction:column;">
+          <!-- src を空にして遅延読み込み：「工程」タブタップ時に初めてロード -->
           <iframe
             id="process-iframe"
-            src="https://frex-design.github.io/process-chart/"
+            src="about:blank"
+            data-src="https://frex-design.github.io/process-chart/"
             style="flex:1;width:100%;border:none;"
             title="工程管理表システム"
             allow="same-origin"
