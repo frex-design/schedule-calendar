@@ -1804,6 +1804,7 @@ function openProfileModal() {
   const profile = currentProfile;
   document.getElementById('profile-name').value = profile.name || '';
   document.getElementById('profile-dept').value = profile.department || '';
+
   // メール・パスワードフィールドをリセット
   const emailEl = document.getElementById('profile-email');
   const passEl  = document.getElementById('profile-password');
@@ -2005,6 +2006,7 @@ function updateTypeButtons(selectedType) {
  */
 function renderColorPalette(currentColor) {
   const palette = document.getElementById('color-palette');
+  if (!palette) return;
   palette.innerHTML = AVATAR_COLORS.map(color => `
     <div class="color-dot ${color === currentColor ? 'selected' : ''}"
          style="background:${color};"
@@ -2020,7 +2022,8 @@ function selectAvatarColor(color) {
   document.querySelectorAll('.color-dot').forEach(dot => {
     dot.classList.toggle('selected', dot.dataset.color === color);
   });
-  document.getElementById('selected-color').value = color;
+  const selectedColor = document.getElementById('selected-color');
+  if (selectedColor) selectedColor.value = color;
 
   // プレビューを更新
   const preview = document.getElementById('profile-avatar-preview');
@@ -3151,7 +3154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (newEmail || newPassword) {
         await updateAuthCredentials(newEmail || null, newPassword || null);
       }
-      // プロフィール更新
+      // プロフィール更新（画面構成を変えないため、表示色など非表示項目は更新しない）
       await updateProfile({ name, department });
     } catch (err) {
       showToast('更新に失敗しました: ' + err.message, 'error');
