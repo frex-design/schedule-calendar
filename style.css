@@ -2834,6 +2834,8 @@ ul, ol { list-style: none; }
     font-family: inherit;
     cursor: pointer;
     transition: color var(--transition);
+    touch-action: manipulation; /* iOS 300ms遅延を除去 */
+    -webkit-tap-highlight-color: transparent; /* iOSタップ時のグレー枠を非表示 */
     /* paddingで60px領域内に収める */
     padding: 8px 0 4px;
     align-self: flex-start;
@@ -2854,6 +2856,8 @@ ul, ol { list-style: none; }
     height: 44px;
     align-self: center;
     padding: 0;
+    touch-action: manipulation; /* iOS 300ms遅延を除去 */
+    -webkit-tap-highlight-color: transparent;
   }
   .mob-nav-add-btn svg { width: 18px; height: 18px; }
 

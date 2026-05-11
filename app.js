@@ -141,6 +141,7 @@ let allProfiles = [];             // 全ユーザープロフィール
 let allEvents = [];               // 取得済みイベント一覧
 let allFacilities = [];           // 施設一覧
 let todos = [];                   // TODO一覧
+let todosDirty = true;            // TODO再描画フラグ（切り替え時の無駄な再描画防止）
 let currentView = 'group-week';   // 現在のビュー
 let currentPage = 'schedule';     // 現在のページ（schedule / todo）
 let currentDate = new Date();     // 現在参照中の日付
@@ -893,6 +894,7 @@ async function fetchTodos() {
     .order('created_at');
   if (error) throw error;
   todos = data || [];
+  todosDirty = true;
   renderTodos();
 }
 
@@ -928,6 +930,7 @@ async function toggleTodo(id, completed) {
       .eq('user_id', currentUser.id);
     if (error) throw error;
     todos = todos.map(t => t.id === id ? { ...t, completed } : t);
+    todosDirty = true;
     renderTodos();
   } catch (err) {
     showToast('更新に失敗しました', 'error');
@@ -946,6 +949,7 @@ async function deleteTodo(id) {
       .eq('user_id', currentUser.id);
     if (error) throw error;
     todos = todos.filter(t => t.id !== id);
+    todosDirty = true;
     renderTodos();
     showToast('TODOを削除しました', 'info');
   } catch (err) {
@@ -1597,6 +1601,7 @@ function renderTodos() {
   }
 
   container.innerHTML = html;
+  todosDirty = false;
 }
 
 /**
@@ -2314,7 +2319,7 @@ function showTodoPage() {
   document.getElementById('mob-nav-schedule')?.classList.remove('active');
   document.getElementById('mob-nav-todo')?.classList.add('active');
   document.getElementById('mob-nav-process')?.classList.remove('active');
-  renderTodos();
+  if (todosDirty) renderTodos(); // データ変更時のみ再描画（タブ切り替え高速化）
 }
 
 /**
