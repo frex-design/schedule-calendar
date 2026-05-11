@@ -1784,11 +1784,21 @@ function openEventDetail(eventId) {
 
   // 編集・削除ボタン
   const detailFooter = document.getElementById('event-detail-footer');
+  const isMobile = window.innerWidth <= 768;
+  const isGroupWeek = currentView === 'group-week';
   if (isOwner) {
-    detailFooter.innerHTML = `
+    if (isMobile && isGroupWeek) {
+      // スマホ版のグループ週: 編集ボタンなし
+      detailFooter.innerHTML = `
+      <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>`;
+    } else {
+      // それ以外: 編集ボタンあり
+      detailFooter.innerHTML = `
       <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>
       <button class="btn btn-primary btn-sm" onclick="closeModal('event-detail-modal');openEventModal(null,'${ev.id}')">編集</button>`;
+    }
   } else {
     detailFooter.innerHTML = `
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>`;
