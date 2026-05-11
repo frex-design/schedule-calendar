@@ -760,6 +760,8 @@ ul, ol { list-style: none; }
   cursor: pointer;
   transition: all var(--transition);
   letter-spacing: 0.2px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .sidebar-nav-btn:hover {
@@ -1029,6 +1031,8 @@ ul, ol { list-style: none; }
   white-space: nowrap;
   letter-spacing: 0.6px;
   text-transform: uppercase;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .view-tab:hover { color: var(--bb-dark); }
