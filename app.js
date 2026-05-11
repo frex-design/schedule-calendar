@@ -1980,6 +1980,23 @@ function closeAllModals() {
 }
 
 /**
+ * PWA キャッシュをクリアして最新版にリロード
+ */
+async function clearCache() {
+  if (!confirm('キャッシュをクリアして最新版に更新しますか？\nページが再読み込みされます。')) return;
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(key => caches.delete(key)));
+    }
+    showToast('キャッシュをクリアしました。再読み込みします…', 'success');
+    setTimeout(() => location.reload(true), 1200);
+  } catch (err) {
+    showToast('キャッシュのクリアに失敗しました: ' + err.message, 'error');
+  }
+}
+
+/**
  * 参加者リストを描画
  */
 function renderParticipantList() {
