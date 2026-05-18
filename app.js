@@ -751,13 +751,15 @@ async function saveEvent(eventData) {
 
     let eventId;
     if (editingEventId) {
-      // 更新（管理者は user_id 制限なし）
+      // 更新（オーナー・参加者・管理者は user_id 制限なし）
       const isAdmin = currentProfile?.is_admin === true;
+      const editingEv = allEvents.find(e => e.id === editingEventId);
+      const isOwnerOfEditing = editingEv?.user_id === currentUser.id;
       let updateQuery = supabaseClient
         .from('events')
         .update({ ...eventData, updated_at: new Date().toISOString() })
         .eq('id', editingEventId);
-      if (!isAdmin) updateQuery = updateQuery.eq('user_id', currentUser.id);
+      if (!isAdmin && !isOwnerOfEditing) updateQuery = updateQuery.eq('user_id', currentUser.id);
       const { data, error } = await updateQuery.select().single();
       if (error) throw error;
       eventId = data.id;
@@ -1727,6 +1729,7 @@ function openEventDetail(eventId) {
     : `${formatDateStr(ev.start_datetime)} ${formatTime(ev.start_datetime)} 〜 ${formatTime(ev.end_datetime)}`;
 
   const isOwner = ev.user_id === currentUser.id;
+  const isAdmin = currentProfile?.is_admin === true;
 
   // 参加者
   const participants = ev.event_participants || [];
@@ -1787,12 +1790,17 @@ function openEventDetail(eventId) {
       </div>
     </div>`;
 
-  // 編集・削除ボタン（自分の予定 OR 管理者なら全ビュー・全端末で編集可能）
+  // 編集・削除ボタン
+  // - 編集: オーナー OR 参加者 OR 管理者
+  // - 削除: オーナー OR 管理者のみ
   const detailFooter = document.getElementById('event-detail-footer');
-  const isAdmin = currentProfile?.is_admin === true;
-  if (isOwner || isAdmin) {
+  const isParticipant = participants.some(p => p.user_id === currentUser.id);
+  const canEdit   = isOwner || isParticipant || isAdmin;
+  const canDelete = isOwner || isAdmin;
+
+  if (canEdit) {
     detailFooter.innerHTML = `
-      <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
+      ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>` : ''}
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>
       <button class="btn btn-primary btn-sm" onclick="closeModal('event-detail-modal');openEventModal(null,'${ev.id}')">編集</button>`;
   } else {
