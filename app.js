@@ -712,14 +712,19 @@ async function fetchFacilities() {
 /**
  * 指定期間のイベントを取得
  */
-async function fetchEvents(startDate, endDate, forceRefresh = false) {
+/**
+ * @param {boolean} updateGlobal - true なら allEvents を更新する（プリフェッチ時は false）
+ *   プリフェッチ時に allEvents を上書きすると、現在ビューのチップIDと不一致になり
+ *   openEventDetail が "ev not found → return" でサイレント失敗する不具合を防ぐ
+ */
+async function fetchEvents(startDate, endDate, forceRefresh = false, updateGlobal = true) {
   const start = toISO(startOf(startDate));
   const end   = toISO(endOf(endDate));
   const cacheKey = `${start}_${end}`;
 
   // キャッシュヒット（強制更新なし）
   if (!forceRefresh && eventCache.has(cacheKey)) {
-    allEvents = eventCache.get(cacheKey);
+    if (updateGlobal) allEvents = eventCache.get(cacheKey);
     return;
   }
 
@@ -731,8 +736,9 @@ async function fetchEvents(startDate, endDate, forceRefresh = false) {
     .lte('end_datetime', end)
     .order('start_datetime');
   if (error) throw error;
-  allEvents = data || [];
-  eventCache.set(cacheKey, allEvents);
+  const fetched = data || [];
+  eventCache.set(cacheKey, fetched);
+  if (updateGlobal) allEvents = fetched;
 }
 
 /** イベントキャッシュを全クリア（保存・削除・リアルタイム更新時に呼ぶ） */
@@ -1071,8 +1077,9 @@ function prefetchAdjacentViews() {
   const nextDate = shiftDate(currentDate,  1);
   const [ps, pe] = getDateRange(prevDate);
   const [ns, ne] = getDateRange(nextDate);
-  fetchEvents(ps, pe).catch(() => {});
-  fetchEvents(ns, ne).catch(() => {});
+  // updateGlobal=false: プリフェッチは eventCache を温めるだけで allEvents を上書きしない
+  fetchEvents(ps, pe, false, false).catch(() => {});
+  fetchEvents(ns, ne, false, false).catch(() => {});
 }
 
 /**
