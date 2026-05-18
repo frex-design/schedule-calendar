@@ -1126,18 +1126,43 @@ function renderCurrentView() {
   // チップ内の Lucide アイコンを展開
   lucide.createIcons({ context: content });
 
-  // event-chip / day-event-card の addEventListener バインド
-  // (inline onclick は iOS PWA などで無反応になるため data-event-id 方式に統一)
+  // ── 全ビュー共通: クリック／タップイベントを一括バインド ──
+  // inline onclick は iOS PWA・一部ブラウザで無反応になるため data-* 方式に統一
+
+  // グループ週・グループ日・個人週 のイベントチップ
   content.querySelectorAll('.event-chip[data-event-id]').forEach(chip => {
     chip.addEventListener('click', e => {
       e.stopPropagation();
       openEventDetail(chip.dataset.eventId);
     });
   });
+
+  // 個人日 のイベントカード
   content.querySelectorAll('.day-event-card[data-event-id]').forEach(card => {
     card.addEventListener('click', e => {
       e.stopPropagation();
       openEventDetail(card.dataset.eventId);
+    });
+  });
+
+  // 個人月 のイベントチップ
+  content.querySelectorAll('.month-event-chip[data-event-id]').forEach(chip => {
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventDetail(chip.dataset.eventId);
+    });
+  });
+
+  // 個人月 のセル（日付クリック → 予定追加）
+  content.querySelectorAll('.month-day-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => openEventModal(cell.dataset.date));
+  });
+
+  // 個人月 の「他N件」
+  content.querySelectorAll('.month-more[data-date]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventModal(el.dataset.date);
     });
   });
 
@@ -1565,22 +1590,7 @@ function renderPersonalMonth(container) {
   gridHTML += '</div>';
   div.innerHTML = gridHTML;
 
-  // inline onclick の代わりに addEventListener で確実にバインド
-  div.querySelectorAll('.month-day-cell[data-date]').forEach(cell => {
-    cell.addEventListener('click', () => openEventModal(cell.dataset.date));
-  });
-  div.querySelectorAll('.month-event-chip[data-event-id]').forEach(chip => {
-    chip.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventDetail(chip.dataset.eventId);
-    });
-  });
-  div.querySelectorAll('.month-more[data-date]').forEach(el => {
-    el.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventModal(el.dataset.date);
-    });
-  });
+  // ※ イベントバインドは renderCurrentView() で lucide.createIcons 後に一括処理
 
   container.appendChild(div);
 }
@@ -1835,12 +1845,21 @@ function openEventDetail(eventId) {
 
   if (canEdit) {
     detailFooter.innerHTML = `
-      ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>` : ''}
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>
-      <button class="btn btn-primary btn-sm" onclick="closeModal('event-detail-modal');openEventModal(null,'${ev.id}')">編集</button>`;
+      ${canDelete ? `<button class="btn btn-danger btn-sm" id="btn-detail-delete">削除</button>` : ''}
+      <button class="btn btn-secondary btn-sm" id="btn-detail-close">閉じる</button>
+      <button class="btn btn-primary btn-sm" id="btn-detail-edit">編集</button>`;
+    if (canDelete) {
+      document.getElementById('btn-detail-delete').addEventListener('click', () => deleteEvent(ev.id));
+    }
+    document.getElementById('btn-detail-close').addEventListener('click', () => closeModal('event-detail-modal'));
+    document.getElementById('btn-detail-edit').addEventListener('click', () => {
+      closeModal('event-detail-modal');
+      openEventModal(null, ev.id);
+    });
   } else {
     detailFooter.innerHTML = `
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>`;
+      <button class="btn btn-secondary btn-sm" id="btn-detail-close">閉じる</button>`;
+    document.getElementById('btn-detail-close').addEventListener('click', () => closeModal('event-detail-modal'));
   }
 
   document.getElementById('event-detail-modal').classList.remove('hidden');
