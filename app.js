@@ -1157,34 +1157,53 @@ function renderCurrentView() {
   // チップ内の Lucide アイコンを展開
   lucide.createIcons({ context: content });
 
-  // ── 全ビュー共通: safeTap で一括バインド ──
-  // iOS PWA (WKWebView) は scroll コンテナ内の click を消すため
-  // touchend + click 両対応の safeTap() を使用
+  // ── 全ビュー共通: コンテンツへの委譲イベント（Event Delegation）──
+  //
+  // 個別要素への safeTap バインドは
+  //   ・renderCurrentView 呼び出し毎にリスナーが累積する
+  //   ・要素の DOM タイミング・伝搬によって発火しないケースがある
+  // → content 単体にリスナーを持ち、AbortController で毎回リセットする方式に変更
+  //   iOS PWA は touchend 委譲、デスクトップは click 委譲で両対応
 
-  // グループ週・グループ日・個人週 のイベントチップ
-  content.querySelectorAll('.event-chip[data-event-id]').forEach(chip => {
-    safeTap(chip, () => openEventDetail(chip.dataset.eventId));
-  });
+  // 旧リスナーをクリア（renderCurrentView 再実行時の累積を防ぐ）
+  if (content._tapCtrl) content._tapCtrl.abort();
+  const _tapCtrl = new AbortController();
+  content._tapCtrl = _tapCtrl;
+  const _sig = _tapCtrl.signal;
 
-  // 個人日 のイベントカード
-  content.querySelectorAll('.day-event-card[data-event-id]').forEach(card => {
-    safeTap(card, () => openEventDetail(card.dataset.eventId));
-  });
+  // クリック対象を判定してアクション実行
+  const _dispatchTap = target => {
+    const chip = target.closest('[data-event-id]');       // event-chip / month-event-chip / day-event-card
+    if (chip) { openEventDetail(chip.dataset.eventId); return true; }
+    const more = target.closest('.month-more[data-date]'); // 「他N件」
+    if (more) { openEventModal(more.dataset.date);  return true; }
+    const cell = target.closest('.month-day-cell[data-date]'); // 月セル（空クリック → 追加）
+    if (cell) { openEventModal(cell.dataset.date);  return true; }
+    return false;
+  };
 
-  // 個人月 のイベントチップ
-  content.querySelectorAll('.month-event-chip[data-event-id]').forEach(chip => {
-    safeTap(chip, () => openEventDetail(chip.dataset.eventId));
-  });
+  // iOS PWA (WKWebView) 対応: touchend 委譲（スクロールと判別）
+  let _tX = 0, _tY = 0, _tFired = false;
+  content.addEventListener('touchstart', e => {
+    _tX = e.touches[0].clientX;
+    _tY = e.touches[0].clientY;
+  }, { passive: true, signal: _sig });
 
-  // 個人月 のセル（日付クリック → 予定追加）
-  content.querySelectorAll('.month-day-cell[data-date]').forEach(cell => {
-    safeTap(cell, () => openEventModal(cell.dataset.date));
-  });
+  content.addEventListener('touchend', e => {
+    const dx = Math.abs(e.changedTouches[0].clientX - _tX);
+    const dy = Math.abs(e.changedTouches[0].clientY - _tY);
+    if (dx < 10 && dy < 10 && _dispatchTap(e.target)) {
+      e.preventDefault();                                 // click の重複発火を防ぐ
+      _tFired = true;
+      setTimeout(() => { _tFired = false; }, 600);
+    }
+  }, { passive: false, signal: _sig });
 
-  // 個人月 の「他N件」
-  content.querySelectorAll('.month-more[data-date]').forEach(el => {
-    safeTap(el, () => openEventModal(el.dataset.date));
-  });
+  // デスクトップ / iOS Safari: click 委譲
+  content.addEventListener('click', e => {
+    if (_tFired) return;
+    _dispatchTap(e.target);
+  }, { signal: _sig });
 
   updateNavPeriod();
 }
