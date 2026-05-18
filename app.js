@@ -1511,7 +1511,7 @@ function renderPersonalMonth(container) {
       const isThisMonth = day.getMonth() === month;
       const isToday = ds === today;
       const dow = day.getDay(); // 0=日
-      const eventsOnDay = isThisMonth ? getEventsOnDay(day, currentUser.id, true) : [];
+      const eventsOnDay = isThisMonth ? getEventsOnDay(day, currentUser.id) : [];
 
       // 祝日チェック
       if (!holidayCache[day.getFullYear()]) holidayCache[day.getFullYear()] = getJapaneseHolidays(day.getFullYear());
@@ -1787,23 +1787,13 @@ function openEventDetail(eventId) {
       </div>
     </div>`;
 
-  // 編集・削除ボタン
+  // 編集・削除ボタン（自分の予定なら全ビュー・全端末で編集可能）
   const detailFooter = document.getElementById('event-detail-footer');
-  const isMobile = window.innerWidth <= 768;
-  const isGroupWeek = currentView === 'group-week';
   if (isOwner) {
-    if (isMobile && isGroupWeek) {
-      // スマホ版のグループ週: 編集ボタンなし
-      detailFooter.innerHTML = `
-      <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>`;
-    } else {
-      // それ以外: 編集ボタンあり
-      detailFooter.innerHTML = `
+    detailFooter.innerHTML = `
       <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>
       <button class="btn btn-primary btn-sm" onclick="closeModal('event-detail-modal');openEventModal(null,'${ev.id}')">編集</button>`;
-    }
   } else {
     detailFooter.innerHTML = `
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>`;
