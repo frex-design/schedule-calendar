@@ -1095,6 +1095,37 @@ function getDateRange(date = currentDate) {
 }
 
 /**
+ * iOS PWA (WKWebView) 対応の安全なタップバインドヘルパー
+ *
+ * 問題：overflow:hidden + -webkit-overflow-scrolling:touch コンテナ内では
+ *       WKWebView が click イベントを消してしまう（Safari ブラウザは問題なし）
+ * 対策：touchend（スクロール判別付き）でハンドラを先に呼び、
+ *       click は touch デバイスでの二重発火を防ぎつつデスクトップで有効にする
+ */
+function safeTap(el, handler) {
+  let startX = 0, startY = 0, tapFired = false;
+  el.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = Math.abs(e.changedTouches[0].clientX - startX);
+    const dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (dx < 10 && dy < 10) {        // スクロールでなくタップと判定
+      e.preventDefault();             // click の重複発火を防ぐ
+      e.stopPropagation();
+      tapFired = true;
+      setTimeout(() => { tapFired = false; }, 600);
+      handler(e);
+    }
+  }, { passive: false });
+  el.addEventListener('click', e => { // デスクトップ向けフォールバック
+    e.stopPropagation();
+    if (!tapFired) handler(e);
+  });
+}
+
+/**
  * 現在のビューを描画
  */
 function renderCurrentView() {
@@ -1126,44 +1157,33 @@ function renderCurrentView() {
   // チップ内の Lucide アイコンを展開
   lucide.createIcons({ context: content });
 
-  // ── 全ビュー共通: クリック／タップイベントを一括バインド ──
-  // inline onclick は iOS PWA・一部ブラウザで無反応になるため data-* 方式に統一
+  // ── 全ビュー共通: safeTap で一括バインド ──
+  // iOS PWA (WKWebView) は scroll コンテナ内の click を消すため
+  // touchend + click 両対応の safeTap() を使用
 
   // グループ週・グループ日・個人週 のイベントチップ
   content.querySelectorAll('.event-chip[data-event-id]').forEach(chip => {
-    chip.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventDetail(chip.dataset.eventId);
-    });
+    safeTap(chip, () => openEventDetail(chip.dataset.eventId));
   });
 
   // 個人日 のイベントカード
   content.querySelectorAll('.day-event-card[data-event-id]').forEach(card => {
-    card.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventDetail(card.dataset.eventId);
-    });
+    safeTap(card, () => openEventDetail(card.dataset.eventId));
   });
 
   // 個人月 のイベントチップ
   content.querySelectorAll('.month-event-chip[data-event-id]').forEach(chip => {
-    chip.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventDetail(chip.dataset.eventId);
-    });
+    safeTap(chip, () => openEventDetail(chip.dataset.eventId));
   });
 
   // 個人月 のセル（日付クリック → 予定追加）
   content.querySelectorAll('.month-day-cell[data-date]').forEach(cell => {
-    cell.addEventListener('click', () => openEventModal(cell.dataset.date));
+    safeTap(cell, () => openEventModal(cell.dataset.date));
   });
 
   // 個人月 の「他N件」
   content.querySelectorAll('.month-more[data-date]').forEach(el => {
-    el.addEventListener('click', e => {
-      e.stopPropagation();
-      openEventModal(el.dataset.date);
-    });
+    safeTap(el, () => openEventModal(el.dataset.date));
   });
 
   updateNavPeriod();

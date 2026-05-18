@@ -3,7 +3,7 @@
 //   静的アセット（同一オリジン・CDN）→ Cache First + バックグラウンド更新
 //   API・動的リクエスト          → Network First（従来通り）
 
-const CACHE_NAME = 'frex-schedule-v28';
+const CACHE_NAME = 'frex-schedule-v29';
 const STATIC_ASSETS = [
   '/schedule-calendar/',
   '/schedule-calendar/index.html',

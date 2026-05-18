@@ -1464,6 +1464,8 @@ ul, ol { list-style: none; }
   -webkit-tap-highlight-color: rgba(0,0,0,0.1);
   user-select: none;
   -webkit-user-select: none;
+  position: relative;   /* iOS WKWebView ヒットテスト優先度確保 */
+  z-index: 2;
 }
 
 .event-chip:hover { opacity: 0.8; }
