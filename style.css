@@ -1435,6 +1435,8 @@ ul, ol { list-style: none; }
   cursor: pointer;
   transition: background var(--transition);
   position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .schedule-cell:hover { background: var(--bb-blue-lt); }
@@ -1458,6 +1460,10 @@ ul, ol { list-style: none; }
   white-space: nowrap;
   transition: opacity var(--transition);
   border-left: 2px solid;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .event-chip:hover { opacity: 0.8; }
@@ -1723,6 +1729,8 @@ ul, ol { list-style: none; }
   cursor: pointer;
   transition: background var(--transition);
   position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .month-day-cell:hover { background: var(--bb-blue-lt); }
@@ -1766,6 +1774,10 @@ ul, ol { list-style: none; }
   text-overflow: ellipsis;
   font-weight: 500;
   border-left: 2px solid;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .month-more {
