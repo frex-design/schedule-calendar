@@ -175,20 +175,29 @@ CREATE POLICY "events_insert_own"
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
--- 自分のイベントのみ更新可
+-- 自分のイベント OR 管理者なら更新可
 DROP POLICY IF EXISTS "events_update_own" ON events;
 CREATE POLICY "events_update_own"
   ON events FOR UPDATE
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  )
+  WITH CHECK (
+    auth.uid() = user_id
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
 
--- 自分のイベントのみ削除可
+-- 自分のイベント OR 管理者なら削除可
 DROP POLICY IF EXISTS "events_delete_own" ON events;
 CREATE POLICY "events_delete_own"
   ON events FOR DELETE
   TO authenticated
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
+  );
 
 -- ----------------------------------------
 -- RLS ポリシー: event_participants
@@ -201,7 +210,7 @@ CREATE POLICY "event_participants_select_all"
   TO authenticated
   USING (true);
 
--- イベントオーナーが参加者を追加可
+-- イベントオーナー OR 管理者が参加者を追加可
 DROP POLICY IF EXISTS "event_participants_insert_owner" ON event_participants;
 CREATE POLICY "event_participants_insert_owner"
   ON event_participants FOR INSERT
@@ -212,9 +221,10 @@ CREATE POLICY "event_participants_insert_owner"
       WHERE events.id = event_id
       AND events.user_id = auth.uid()
     )
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
   );
 
--- イベントオーナーが参加者を削除可
+-- イベントオーナー OR 管理者が参加者を削除可
 DROP POLICY IF EXISTS "event_participants_delete_owner" ON event_participants;
 CREATE POLICY "event_participants_delete_owner"
   ON event_participants FOR DELETE
@@ -225,6 +235,7 @@ CREATE POLICY "event_participants_delete_owner"
       WHERE events.id = event_id
       AND events.user_id = auth.uid()
     )
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE)
   );
 
 -- ----------------------------------------

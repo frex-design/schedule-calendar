@@ -751,14 +751,14 @@ async function saveEvent(eventData) {
 
     let eventId;
     if (editingEventId) {
-      // 更新
-      const { data, error } = await supabaseClient
+      // 更新（管理者は user_id 制限なし）
+      const isAdmin = currentProfile?.is_admin === true;
+      let updateQuery = supabaseClient
         .from('events')
         .update({ ...eventData, updated_at: new Date().toISOString() })
-        .eq('id', editingEventId)
-        .eq('user_id', currentUser.id)
-        .select()
-        .single();
+        .eq('id', editingEventId);
+      if (!isAdmin) updateQuery = updateQuery.eq('user_id', currentUser.id);
+      const { data, error } = await updateQuery.select().single();
       if (error) throw error;
       eventId = data.id;
     } else {
@@ -839,11 +839,11 @@ async function deleteEvent(eventId) {
   if (!confirm('この予定を削除しますか？')) return;
   showLoading(true);
   try {
-    const { error } = await supabaseClient
-      .from('events')
-      .delete()
-      .eq('id', eventId)
-      .eq('user_id', currentUser.id);
+    // 管理者は user_id 制限なし
+    const isAdmin = currentProfile?.is_admin === true;
+    let deleteQuery = supabaseClient.from('events').delete().eq('id', eventId);
+    if (!isAdmin) deleteQuery = deleteQuery.eq('user_id', currentUser.id);
+    const { error } = await deleteQuery;
     if (error) throw error;
     showToast('予定を削除しました', 'success');
     closeModal('event-detail-modal');
@@ -1787,9 +1787,10 @@ function openEventDetail(eventId) {
       </div>
     </div>`;
 
-  // 編集・削除ボタン（自分の予定なら全ビュー・全端末で編集可能）
+  // 編集・削除ボタン（自分の予定 OR 管理者なら全ビュー・全端末で編集可能）
   const detailFooter = document.getElementById('event-detail-footer');
-  if (isOwner) {
+  const isAdmin = currentProfile?.is_admin === true;
+  if (isOwner || isAdmin) {
     detailFooter.innerHTML = `
       <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">削除</button>
       <button class="btn btn-secondary btn-sm" onclick="closeModal('event-detail-modal')">閉じる</button>
