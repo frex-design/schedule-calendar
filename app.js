@@ -1126,6 +1126,21 @@ function renderCurrentView() {
   // チップ内の Lucide アイコンを展開
   lucide.createIcons({ context: content });
 
+  // event-chip / day-event-card の addEventListener バインド
+  // (inline onclick は iOS PWA などで無反応になるため data-event-id 方式に統一)
+  content.querySelectorAll('.event-chip[data-event-id]').forEach(chip => {
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventDetail(chip.dataset.eventId);
+    });
+  });
+  content.querySelectorAll('.day-event-card[data-event-id]').forEach(card => {
+    card.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventDetail(card.dataset.eventId);
+    });
+  });
+
   updateNavPeriod();
 }
 
@@ -1387,7 +1402,7 @@ function renderDayEventCard(ev) {
   const type = EVENT_TYPES[ev.type] || EVENT_TYPES.other;
   const timeStr = ev.is_all_day ? '終日' : `${formatTime(ev.start_datetime)} 〜 ${formatTime(ev.end_datetime)}`;
   return `
-    <div class="day-event-card" style="border-left-color:${type.color};" onclick="openEventDetail('${ev.id}')">
+    <div class="day-event-card" data-event-id="${ev.id}" style="border-left-color:${type.color};" >
       <div class="day-event-time"><span class="chip-icon"><i data-lucide="${type.lucideIcon}"></i></span> ${timeStr}${ev.is_private ? ' <span class="private-badge">🔒</span>' : ''}</div>
       <div class="day-event-body">
         <div class="day-event-title">${escHtml(ev.title)}</div>
@@ -1581,8 +1596,9 @@ function renderEventChip(ev) {
   const type = EVENT_TYPES[ev.type] || EVENT_TYPES.other;
   const timeStr = ev.is_all_day ? '' : formatTime(ev.start_datetime);
   return `
-    <div class="event-chip" style="background:${type.bg};color:${type.color};border-left-color:${type.color};"
-         onclick="event.stopPropagation();openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">
+    <div class="event-chip" data-event-id="${ev.id}"
+         style="background:${type.bg};color:${type.color};border-left-color:${type.color};"
+         title="${escHtml(ev.title)}">
       <span class="chip-icon"><i data-lucide="${type.lucideIcon}"></i></span>
       <span class="event-chip-title">${timeStr ? timeStr + ' ' : ''}${escHtml(ev.title)}</span>
       ${ev.is_private ? '<span class="private-badge">🔒</span>' : ''}
