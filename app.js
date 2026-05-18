@@ -1532,15 +1532,16 @@ function renderPersonalMonth(container) {
       const moreCount = eventsOnDay.length - MAX_EVENTS;
 
       gridHTML += `
-        <div class="${cellClass}" onclick="openEventModal('${ds}')">
+        <div class="${cellClass}" data-date="${ds}">
           <div class="month-day-number">${day.getDate()}</div>
           ${holidayName ? `<div class="month-holiday-name">${holidayName}</div>` : ''}
           ${visibleEvents.map(ev => {
             const type = EVENT_TYPES[ev.type] || EVENT_TYPES.other;
-            return `<div class="month-event-chip" style="background:${type.bg};color:${type.color};border-left-color:${type.color};"
-                         onclick="event.stopPropagation();openEventDetail('${ev.id}')">${escHtml(ev.title)}</div>`;
+            return `<div class="month-event-chip" data-event-id="${ev.id}"
+                         style="background:${type.bg};color:${type.color};border-left-color:${type.color};"
+                         >${escHtml(ev.title)}</div>`;
           }).join('')}
-          ${moreCount > 0 ? `<div class="month-more">他${moreCount}件</div>` : ''}
+          ${moreCount > 0 ? `<div class="month-more" data-date="${ds}">他${moreCount}件</div>` : ''}
         </div>`;
 
       cursor.setDate(cursor.getDate() + 1);
@@ -1548,6 +1549,24 @@ function renderPersonalMonth(container) {
   }
   gridHTML += '</div>';
   div.innerHTML = gridHTML;
+
+  // inline onclick の代わりに addEventListener で確実にバインド
+  div.querySelectorAll('.month-day-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => openEventModal(cell.dataset.date));
+  });
+  div.querySelectorAll('.month-event-chip[data-event-id]').forEach(chip => {
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventDetail(chip.dataset.eventId);
+    });
+  });
+  div.querySelectorAll('.month-more[data-date]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openEventModal(el.dataset.date);
+    });
+  });
+
   container.appendChild(div);
 }
 
