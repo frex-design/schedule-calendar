@@ -823,9 +823,12 @@ async function saveEvent(eventData) {
       .eq('id', eventId)
       .single();
     if (savedEvent) {
-      if (editingEventId) {
-        const idx = allEvents.findIndex(e => e.id === editingEventId);
-        if (idx >= 0) allEvents[idx] = savedEvent;
+      // 自分のINSERTを Realtime購読（subscribeRealtime）が先に取得して
+      // allEvents に入れている場合があるため、id で重複チェックしてから反映する。
+      // 無条件 push だと先着レース時に同じ予定が2件入り、表示が二重化する根本原因になる。
+      const idx = allEvents.findIndex(e => e.id === savedEvent.id);
+      if (idx >= 0) {
+        allEvents[idx] = savedEvent;          // 既存（編集 or Realtimeが先行取得）→ 置き換え
       } else {
         allEvents.push(savedEvent);
         allEvents.sort((a, b) => a.start_datetime.localeCompare(b.start_datetime));
