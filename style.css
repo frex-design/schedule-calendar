@@ -1054,14 +1054,32 @@ ul, ol { list-style: none; }
   flex-wrap: wrap;
 }
 
+.nav-period-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 1;
+  min-width: 160px;
+}
+
 .nav-period {
   font-family: 'Figtree', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: var(--bb-dark);
-  flex: 1;
-  min-width: 160px;
+  flex: 0 1 auto;
+  min-width: 0;
   letter-spacing: 0.3px;
+}
+
+.nav-week-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bb-brown);
+  background: var(--bb-warm);
+  padding: 2px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .nav-controls {
@@ -2965,6 +2983,11 @@ ul, ol { list-style: none; }
     gap: 5px;
     flex-wrap: nowrap;
   }
+  .nav-period-group {
+    flex: 1;
+    min-width: 0;
+    gap: 6px;
+  }
   .nav-period {
     font-size: 13px;
     min-width: 0;
@@ -2972,6 +2995,10 @@ ul, ol { list-style: none; }
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  /* 狭い画面では「週の始まりは日曜日」ラベルは非表示（年月の省略表示を優先） */
+  .nav-week-note {
+    display: none;
   }
   .nav-arrow {
     width: 30px;
