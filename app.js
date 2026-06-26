@@ -1234,6 +1234,13 @@ function updateNavPeriod() {
       el.textContent = formatDate(currentDate, 'YYYY年M月');
       break;
   }
+
+  // 「※週の始まりは日曜日」は週/月の一覧ビューのみ表示（個人日・個人週では非表示）
+  const weekNote = document.querySelector('.nav-week-note');
+  if (weekNote) {
+    const showNote = (currentView === 'group-week' || currentView === 'personal-month');
+    weekNote.style.display = showNote ? '' : 'none';
+  }
 }
 
 // ----------------------------------------

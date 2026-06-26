@@ -1073,12 +1073,9 @@ ul, ol { list-style: none; }
 }
 
 .nav-week-note {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bb-brown);
-  background: var(--bb-warm);
-  padding: 2px 9px;
-  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--bb-mid);
   white-space: nowrap;
 }
 
