@@ -142,7 +142,7 @@ let allEvents = [];               // 取得済みイベント一覧
 let allFacilities = [];           // 施設一覧
 let todos = [];                   // TODO一覧
 let todosDirty = true;            // TODO再描画フラグ（切り替え時の無駄な再描画防止）
-let currentView = 'group-week';   // 現在のビュー
+let currentView = 'personal-month';   // 現在のビュー（デフォルト：個人月）
 let currentPage = 'schedule';     // 現在のページ（schedule / todo）
 let currentDate = new Date();     // 現在参照中の日付
 let miniCalDate = new Date();     // ミニカレンダーの月
@@ -476,11 +476,6 @@ async function init() {
 async function onSignedIn() {
   if (isAppReady) return; // タブ復帰時のトークン更新など二重呼び出しを防ぐ
   isAppReady = true;
-
-  // モバイルはデフォルトで個人月表示（データ取得前に切り替える）
-  if (window.innerWidth <= 768 && currentView === 'group-week') {
-    currentView = 'personal-month';
-  }
 
   // ★ アプリ画面を即表示＋ローディングオーバーレイをすぐ閉じる（体感速度UP）
   showAppScreen();
