@@ -1575,10 +1575,8 @@ function renderPersonalMonth(container) {
   const lastDay = new Date(year, month + 1, 0);
   const today = toDateStr(new Date());
 
-  // グリッド開始日（月曜始まり）
-  let startDow = firstDay.getDay(); // 0=日
-  // 月曜始まりに変換（0=月〜6=日）
-  startDow = (startDow + 6) % 7;
+  // グリッド開始日（日曜始まり）
+  const startDow = firstDay.getDay(); // 0=日
   const gridStart = new Date(firstDay);
   gridStart.setDate(gridStart.getDate() - startDow);
 
@@ -1586,10 +1584,10 @@ function renderPersonalMonth(container) {
   div.className = 'month-view';
 
   // 曜日ヘッダー
-  const dowHeaders = ['月', '火', '水', '木', '金', '土', '日'];
+  const dowHeaders = ['日', '月', '火', '水', '木', '金', '土'];
   let gridHTML = '<div class="month-grid">';
   dowHeaders.forEach((d, i) => {
-    const cls = i === 6 ? 'sun' : i === 5 ? 'sat' : '';
+    const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
     gridHTML += `<div class="month-dow-header ${cls}">${d}</div>`;
   });
 
@@ -1612,9 +1610,9 @@ function renderPersonalMonth(container) {
       let cellClass = 'month-day-cell';
       if (!isThisMonth) cellClass += ' other-month';
       if (isToday) cellClass += ' today';
-      // 月曜始まりなので d=5→土, d=6→日
-      if (d === 5) cellClass += ' saturday';
-      if (d === 6 || isHoliday) cellClass += ' sunday';
+      // 土日は実際の曜日で判定（週の始まりに依存しない）
+      if (dow === 6) cellClass += ' saturday';
+      if (dow === 0 || isHoliday) cellClass += ' sunday';
 
       const MAX_EVENTS = 3;
       const visibleEvents = eventsOnDay.slice(0, MAX_EVENTS);
@@ -2292,8 +2290,7 @@ function renderMiniCalendar() {
   if (!holidayCache[year + 1]) holidayCache[year + 1] = getJapaneseHolidays(year + 1);
   const holidays = { ...holidayCache[year - 1], ...holidayCache[year], ...holidayCache[year + 1] };
 
-  let startDow = firstDay.getDay();
-  startDow = (startDow + 6) % 7; // 月曜始まり
+  const startDow = firstDay.getDay(); // 日曜始まり（0=日）
 
   document.getElementById('mini-cal-title').textContent = `${year}年${month + 1}月`;
 
@@ -2305,15 +2302,15 @@ function renderMiniCalendar() {
     const day = new Date(cursor);
     const ds = toDateStr(day);
     const isThisMonth = day.getMonth() === month;
-    const dow = i % 7; // 0=月
+    const dow = day.getDay(); // 0=日
     const holidayName = holidays[ds];
 
     let cls = 'mini-cal-day';
     if (!isThisMonth) cls += ' other-month';
     if (ds === today) cls += ' today';
     else if (ds === selected) cls += ' selected';
-    if (dow === 6 || holidayName) cls += ' sunday';
-    else if (dow === 5) cls += ' saturday';
+    if (dow === 0 || holidayName) cls += ' sunday';
+    else if (dow === 6) cls += ' saturday';
 
     const titleAttr = holidayName ? ` title="${holidayName}"` : '';
     gridHTML += `<div class="${cls}"${titleAttr} onclick="miniCalDayClick('${ds}')">${day.getDate()}</div>`;
@@ -2580,12 +2577,12 @@ function getEventsInHour(date, hour, userId) {
 }
 
 /**
- * 週の開始（月曜）〜終了（日曜）を取得
+ * 週の開始（日曜）〜終了（土曜）を取得
  */
 function getWeekRange(date) {
   const d = new Date(date);
   const dow = d.getDay(); // 0=日
-  const diff = (dow === 0) ? -6 : 1 - dow; // 月曜へのオフセット
+  const diff = -dow; // 日曜へのオフセット
   const start = new Date(d);
   start.setDate(d.getDate() + diff);
   start.setHours(0, 0, 0, 0);
